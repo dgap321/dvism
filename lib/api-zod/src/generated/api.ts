@@ -122,6 +122,21 @@ export const DeleteKitParams = zod.object({
 });
 
 /**
+ * @summary Add a new item to a kit
+ */
+export const AddItemToKitParams = zod.object({
+  kitId: zod.coerce.string(),
+});
+
+export const AddItemToKitBody = zod.object({
+  itemID: zod.string(),
+  itemName: zod.string(),
+  itemQty: zod.string(),
+  status: zod.string().optional(),
+  category: zod.string().optional(),
+});
+
+/**
  * @summary List all inventory items from MotherCuber3
  */
 export const ListInventoryResponseItem = zod.object({

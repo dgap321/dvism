@@ -94,6 +94,14 @@ export interface InventoryItem {
   CompanyName?: string | null;
 }
 
+export interface AddItemToKitBody {
+  itemID: string;
+  itemName: string;
+  itemQty: string;
+  status?: string;
+  category?: string;
+}
+
 export interface UpdateInventoryItemBody {
   ItemName?: string;
   Qty?: number;

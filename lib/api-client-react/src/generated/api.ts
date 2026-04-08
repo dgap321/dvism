@@ -17,6 +17,7 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AddItemToKitBody,
   ErrorResponse,
   HealthStatus,
   InventoryItem,
@@ -584,6 +585,93 @@ export const useDeleteKit = <
   TContext
 > => {
   return useMutation(getDeleteKitMutationOptions(options));
+};
+
+/**
+ * @summary Add a new item to a kit
+ */
+export const getAddItemToKitUrl = (kitId: string) => {
+  return `/api/kits/${kitId}/items`;
+};
+
+export const addItemToKit = async (
+  kitId: string,
+  addItemToKitBody: AddItemToKitBody,
+  options?: RequestInit,
+): Promise<Item> => {
+  return customFetch<Item>(getAddItemToKitUrl(kitId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(addItemToKitBody),
+  });
+};
+
+export const getAddItemToKitMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addItemToKit>>,
+    TError,
+    { kitId: string; data: BodyType<AddItemToKitBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof addItemToKit>>,
+  TError,
+  { kitId: string; data: BodyType<AddItemToKitBody> },
+  TContext
+> => {
+  const mutationKey = ["addItemToKit"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof addItemToKit>>,
+    { kitId: string; data: BodyType<AddItemToKitBody> }
+  > = (props) => {
+    const { kitId, data } = props ?? {};
+
+    return addItemToKit(kitId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AddItemToKitMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addItemToKit>>
+>;
+export type AddItemToKitMutationBody = BodyType<AddItemToKitBody>;
+export type AddItemToKitMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Add a new item to a kit
+ */
+export const useAddItemToKit = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addItemToKit>>,
+    TError,
+    { kitId: string; data: BodyType<AddItemToKitBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof addItemToKit>>,
+  TError,
+  { kitId: string; data: BodyType<AddItemToKitBody> },
+  TContext
+> => {
+  return useMutation(getAddItemToKitMutationOptions(options));
 };
 
 /**

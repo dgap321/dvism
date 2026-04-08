@@ -163,6 +163,37 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /kits/{kitId}/items:
+    post:
+      operationId: addItemToKit
+      tags: [kits]
+      summary: Add a new item to a kit
+      parameters:
+        - name: kitId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddItemToKitBody"
+      responses:
+        "201":
+          description: Created item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "404":
+          description: Kit not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /inventory:
     get:
       operationId: listInventory
@@ -360,6 +391,24 @@ components:
           type: ["string", "null"]
       required:
         - ID
+
+    AddItemToKitBody:
+      type: object
+      required:
+        - itemID
+        - itemName
+        - itemQty
+      properties:
+        itemID:
+          type: string
+        itemName:
+          type: string
+        itemQty:
+          type: string
+        status:
+          type: string
+        category:
+          type: string
 
     UpdateInventoryItemBody:
       type: object

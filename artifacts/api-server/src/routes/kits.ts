@@ -4,6 +4,8 @@ import {
   UpdateKitBody,
   UpdateKitParams,
   DeleteKitParams,
+  AddItemToKitParams,
+  AddItemToKitBody,
 } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -78,6 +80,108 @@ router.patch("/kits/:kitId", async (req, res): Promise<void> => {
     )
     .get(params.data.kitId);
   res.json(updated);
+});
+
+router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
+  const rawKitId = Array.isArray(req.params.kitId)
+    ? req.params.kitId[0]
+    : req.params.kitId;
+  const params = AddItemToKitParams.safeParse({ kitId: rawKitId });
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const body = AddItemToKitBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const db = getDb();
+
+  const kitRow = db
+    .prepare(
+      `SELECT cubeID, cubeName, frameID, frameName, boxID, boxName, kitName, kitQty
+       FROM EnglishMotherCube WHERE kitID = ? LIMIT 1`
+    )
+    .get(params.data.kitId) as {
+    cubeID: string;
+    cubeName: string;
+    frameID: string;
+    frameName: string;
+    boxID: string;
+    boxName: string;
+    kitName: string;
+    kitQty: string;
+  } | undefined;
+
+  if (!kitRow) {
+    res.status(404).json({ error: "Kit not found" });
+    return;
+  }
+
+  const maxSno = (
+    db
+      .prepare("SELECT MAX(CAST(sNo AS INTEGER)) as maxSno FROM EnglishMotherCube")
+      .get() as { maxSno: number | null }
+  ).maxSno ?? 0;
+
+  const newSno = String(maxSno + 1);
+
+  const engResult = db
+    .prepare(
+      `INSERT INTO EnglishMotherCube
+        (sNo, cubeID, cubeName, frameID, frameName, boxID, boxName,
+         kitID, kitName, kitQty, itemID, itemName, itemQty, status, category)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+    )
+    .run(
+      newSno,
+      kitRow.cubeID,
+      kitRow.cubeName,
+      kitRow.frameID,
+      kitRow.frameName,
+      kitRow.boxID,
+      kitRow.boxName,
+      params.data.kitId,
+      kitRow.kitName,
+      kitRow.kitQty,
+      body.data.itemID,
+      body.data.itemName,
+      body.data.itemQty,
+      body.data.status ?? "A",
+      body.data.category ?? ""
+    );
+
+  db.prepare(
+    `INSERT INTO HindiMotherCube
+      (sNo, cubeID, cubeName, frameID, frameName, boxID, boxName,
+       kitID, kitName, kitQty, itemID, itemName, itemQty, status, category)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+  ).run(
+    newSno,
+    kitRow.cubeID,
+    kitRow.cubeName,
+    kitRow.frameID,
+    kitRow.frameName,
+    kitRow.boxID,
+    kitRow.boxName,
+    params.data.kitId,
+    kitRow.kitName,
+    kitRow.kitQty,
+    body.data.itemID,
+    body.data.itemName,
+    body.data.itemQty,
+    body.data.status ?? "A",
+    body.data.category ?? ""
+  );
+
+  const newItem = db
+    .prepare("SELECT * FROM EnglishMotherCube WHERE id = ?")
+    .get(engResult.lastInsertRowid as number);
+
+  res.status(201).json(newItem);
 });
 
 router.delete("/kits/:kitId", async (req, res): Promise<void> => {
