@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Edit, Trash2, Database, AlertCircle } from "lucide-react";
+import { Search, Edit, Trash2, AlertCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { Item } from "@workspace/api-client-react";
 import { 
   useListItems, 
@@ -45,6 +45,15 @@ export function ItemsTable() {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [deletingItem, setDeletingItem] = useState<Item | null>(null);
   const [editForm, setEditForm] = useState({ itemName: "", itemQty: "" });
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
+  const toggleExpand = (id: number) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -147,13 +156,13 @@ export function ItemsTable() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-8"></TableHead>
               <TableHead className="w-[80px]">S.No</TableHead>
-              <TableHead>Item Name</TableHead>
-              <TableHead>Qty</TableHead>
+              <TableHead>Item</TableHead>
+              <TableHead className="w-[60px]">Qty</TableHead>
               <TableHead>Kit</TableHead>
-              <TableHead>Box / Frame</TableHead>
-              <TableHead>Cube</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Box</TableHead>
+              <TableHead className="w-[70px]">Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -161,13 +170,13 @@ export function ItemsTable() {
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
+                  <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-10" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                   <TableCell><Skeleton className="h-8 w-16 ml-auto" /></TableCell>
                 </TableRow>
               ))
@@ -178,33 +187,157 @@ export function ItemsTable() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredItems.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-mono text-xs text-muted-foreground">{item.sNo}</TableCell>
-                  <TableCell className="font-medium text-foreground">{item.itemName}</TableCell>
-                  <TableCell>{item.itemQty}</TableCell>
-                  <TableCell className="text-muted-foreground">{item.kitName || "-"}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {item.boxName} / {item.frameName}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{item.cubeName}</TableCell>
-                  <TableCell>
-                    <Badge variant={item.status === 'OK' ? 'secondary' : 'outline'} className="font-mono text-[10px]">
-                      {item.status || "N/A"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)}>
-                        <Edit className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => setDeletingItem(item)}>
-                        <Trash2 className="h-4 w-4 text-destructive/80" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+              filteredItems.map((item) => {
+                const isExpanded = expandedRows.has(item.id);
+                return (
+                  <Fragment key={item.id}>
+                    <TableRow
+                      className="cursor-pointer hover:bg-muted/30"
+                      data-testid={`row-item-${item.id}`}
+                    >
+                      {/* Expand toggle */}
+                      <TableCell className="pr-0">
+                        <button
+                          onClick={() => toggleExpand(item.id)}
+                          className="text-muted-foreground hover:text-foreground"
+                          data-testid={`button-expand-${item.id}`}
+                        >
+                          {isExpanded
+                            ? <ChevronDown className="h-4 w-4" />
+                            : <ChevronRight className="h-4 w-4" />}
+                        </button>
+                      </TableCell>
+
+                      {/* S.No */}
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {item.sNo}
+                      </TableCell>
+
+                      {/* Item name + item ID */}
+                      <TableCell>
+                        <div className="font-medium text-foreground leading-tight">
+                          {item.itemName}
+                        </div>
+                        {item.itemID && (
+                          <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                            ID: {item.itemID}
+                          </div>
+                        )}
+                      </TableCell>
+
+                      {/* Qty */}
+                      <TableCell className="font-medium">{item.itemQty}</TableCell>
+
+                      {/* Kit: kitID badge + kitName */}
+                      <TableCell>
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-1.5">
+                            {item.kitID && (
+                              <span className="inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold font-mono text-primary border border-primary/20">
+                                {item.kitID}
+                              </span>
+                            )}
+                            <span className="text-sm font-medium text-foreground">
+                              {item.kitName || "-"}
+                            </span>
+                          </div>
+                          {item.kitQty && (
+                            <div className="text-[11px] text-muted-foreground">
+                              Kit qty: {item.kitQty}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+
+                      {/* Box name */}
+                      <TableCell className="text-sm text-muted-foreground max-w-[200px]">
+                        <div className="truncate" title={item.boxName ?? undefined}>
+                          {item.boxName || "-"}
+                        </div>
+                        {item.frameName && (
+                          <div className="text-[11px] text-muted-foreground/70 truncate">
+                            {item.frameName} &bull; {item.cubeName}
+                          </div>
+                        )}
+                      </TableCell>
+
+                      {/* Status */}
+                      <TableCell>
+                        <Badge
+                          variant={item.status === "OK" ? "secondary" : "outline"}
+                          className="font-mono text-[10px]"
+                        >
+                          {item.status || "N/A"}
+                        </Badge>
+                      </TableCell>
+
+                      {/* Actions */}
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditClick(item)}
+                            data-testid={`button-edit-item-${item.id}`}
+                          >
+                            <Edit className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeletingItem(item)}
+                            data-testid={`button-delete-item-${item.id}`}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive/80" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+
+                    {/* Expanded detail row */}
+                    {isExpanded && (
+                      <TableRow className="bg-muted/20 hover:bg-muted/20">
+                        <TableCell colSpan={8} className="py-2 px-4">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1 text-xs pl-6">
+                            <div>
+                              <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-semibold">Item ID</span>
+                              <div className="font-mono font-medium text-foreground">{item.itemID || "-"}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-semibold">Kit ID</span>
+                              <div className="font-mono font-medium text-foreground">{item.kitID || "-"}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-semibold">Kit Name</span>
+                              <div className="font-medium text-foreground">{item.kitName || "-"}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-semibold">Kit Qty</span>
+                              <div className="font-medium text-foreground">{item.kitQty || "-"}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-semibold">Box</span>
+                              <div className="text-foreground">{item.boxName || "-"}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-semibold">Frame</span>
+                              <div className="text-foreground">{item.frameName || "-"}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-semibold">Cube</span>
+                              <div className="text-foreground">{item.cubeName || "-"}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-semibold">Category</span>
+                              <div className="text-foreground">{item.category || "-"}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </Fragment>
+                );
+              })
             )}
           </TableBody>
         </Table>
