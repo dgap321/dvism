@@ -1,0 +1,100 @@
+import { Router, type IRouter } from "express";
+import { getDb } from "../lib/db-sqlite";
+import {
+  UpdateItemBody,
+  UpdateItemParams,
+  DeleteItemParams,
+} from "@workspace/api-zod";
+
+const router: IRouter = Router();
+
+router.get("/items", async (_req, res): Promise<void> => {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT id, sNo, cubeID, cubeName, frameID, frameName, boxID, boxName,
+              kitID, kitName, kitQty, itemID, itemName, itemQty, status, category
+       FROM EnglishMotherCube ORDER BY id`
+    )
+    .all();
+  res.json(rows);
+});
+
+router.patch("/items/:id", async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
+  const params = UpdateItemParams.safeParse({ id: parseInt(rawId, 10) });
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const body = UpdateItemBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const db = getDb();
+  const existing = db
+    .prepare("SELECT * FROM EnglishMotherCube WHERE id = ?")
+    .get(params.data.id);
+  if (!existing) {
+    res.status(404).json({ error: "Item not found" });
+    return;
+  }
+
+  const updates: string[] = [];
+  const values: (string | number)[] = [];
+
+  if (body.data.itemName !== undefined) {
+    updates.push("itemName = ?");
+    values.push(body.data.itemName);
+  }
+  if (body.data.itemQty !== undefined) {
+    updates.push("itemQty = ?");
+    values.push(body.data.itemQty);
+  }
+
+  if (updates.length > 0) {
+    values.push(params.data.id);
+    db.prepare(
+      `UPDATE EnglishMotherCube SET ${updates.join(", ")} WHERE id = ?`
+    ).run(...values);
+    db.prepare(
+      `UPDATE HindiMotherCube SET ${updates.join(", ")} WHERE id = ?`
+    ).run(...values);
+  }
+
+  const updated = db
+    .prepare("SELECT * FROM EnglishMotherCube WHERE id = ?")
+    .get(params.data.id);
+  res.json(updated);
+});
+
+router.delete("/items/:id", async (req, res): Promise<void> => {
+  const rawId = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
+  const params = DeleteItemParams.safeParse({ id: parseInt(rawId, 10) });
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const db = getDb();
+  const existing = db
+    .prepare("SELECT id FROM EnglishMotherCube WHERE id = ?")
+    .get(params.data.id);
+  if (!existing) {
+    res.status(404).json({ error: "Item not found" });
+    return;
+  }
+
+  db.prepare("DELETE FROM EnglishMotherCube WHERE id = ?").run(params.data.id);
+  db.prepare("DELETE FROM HindiMotherCube WHERE id = ?").run(params.data.id);
+  res.sendStatus(204);
+});
+
+export default router;

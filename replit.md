@@ -11,17 +11,35 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
 - **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
+- **SQLite**: Node 24 built-in `node:sqlite` (DatabaseSync) — no external package needed
 - **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
+- **Build**: esbuild (ESM bundle)
+
+## Artifacts
+
+### DB Editor (react-vite, previewPath: `/`)
+A web app for viewing, editing, and deleting records from the Bhishma SQLite database.
+
+- **Frontend**: `artifacts/db-editor/` — React + Vite + Tailwind, tabs for Items/Kits/Inventory
+- **Backend**: `artifacts/api-server/` — Express 5 with `node:sqlite` reading `src/bhishma.db`
+- **SQLite DB**: `artifacts/api-server/src/bhishma.db` — copied from `attached_assets/`
+
+### API Routes
+- `GET /api/items` — list all items (EnglishMotherCube)
+- `PATCH /api/items/:id` — update itemName/itemQty
+- `DELETE /api/items/:id` — delete item
+- `GET /api/kits` — list distinct kits (grouped from EnglishMotherCube)
+- `PATCH /api/kits/:kitId` — update kitName/kitQty
+- `DELETE /api/kits/:kitId` — delete all rows for kit
+- `GET /api/inventory` — list MotherCuber3 items
+- `PATCH /api/inventory/:id` — update ItemName/Qty
+- `DELETE /api/inventory/:id` — delete inventory item
+- `GET /api/export` — download the updated SQLite db file
 
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- `pnpm --filter @workspace/api-server run build` — build API server
 - `pnpm --filter @workspace/api-server run dev` — run API server locally
-
-See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "DB Editor"
+version = "1.0.0"
+id = "artifacts/db-editor"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25217
+
+[services.development]
+run = "pnpm --filter @workspace/db-editor run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/db-editor", "run", "build" ]
+publicDir = "artifacts/db-editor/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25217"
+BASE_PATH = "/"

@@ -10,6 +10,12 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: items
+    description: Item management
+  - name: kits
+    description: Kit management
+  - name: inventory
+    description: MotherCuber3 inventory
 paths:
   /healthz:
     get:
@@ -24,6 +30,218 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /items:
+    get:
+      operationId: listItems
+      tags: [items]
+      summary: List all items
+      description: Returns all items from the English database
+      responses:
+        "200":
+          description: List of items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Item"
+
+  /items/{id}:
+    patch:
+      operationId: updateItem
+      tags: [items]
+      summary: Update item name and/or quantity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateItemBody"
+      responses:
+        "200":
+          description: Updated item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteItem
+      tags: [items]
+      summary: Delete an item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /kits:
+    get:
+      operationId: listKits
+      tags: [kits]
+      summary: List all kits (distinct)
+      description: Returns distinct kits from the English database
+      responses:
+        "200":
+          description: List of kits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Kit"
+
+  /kits/{kitId}:
+    patch:
+      operationId: updateKit
+      tags: [kits]
+      summary: Update kit name and/or quantity for all matching kitID rows
+      parameters:
+        - name: kitId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateKitBody"
+      responses:
+        "200":
+          description: Updated kit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Kit"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteKit
+      tags: [kits]
+      summary: Delete all rows matching a kitID
+      parameters:
+        - name: kitId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /inventory:
+    get:
+      operationId: listInventory
+      tags: [inventory]
+      summary: List all inventory items from MotherCuber3
+      responses:
+        "200":
+          description: List of inventory items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryItem"
+
+  /inventory/{id}:
+    patch:
+      operationId: updateInventoryItem
+      tags: [inventory]
+      summary: Update inventory item name and/or quantity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateInventoryItemBody"
+      responses:
+        "200":
+          description: Updated inventory item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteInventoryItem
+      tags: [inventory]
+      summary: Delete an inventory item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /export:
+    get:
+      operationId: exportDatabase
+      tags: [health]
+      summary: Export the SQLite database file
+      responses:
+        "200":
+          description: Database file download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +252,119 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+        sNo:
+          type: ["string", "null"]
+        cubeID:
+          type: ["string", "null"]
+        cubeName:
+          type: ["string", "null"]
+        frameID:
+          type: ["string", "null"]
+        frameName:
+          type: ["string", "null"]
+        boxID:
+          type: ["string", "null"]
+        boxName:
+          type: ["string", "null"]
+        kitID:
+          type: ["string", "null"]
+        kitName:
+          type: ["string", "null"]
+        kitQty:
+          type: ["string", "null"]
+        itemID:
+          type: ["string", "null"]
+        itemName:
+          type: ["string", "null"]
+        itemQty:
+          type: ["string", "null"]
+        status:
+          type: ["string", "null"]
+        category:
+          type: ["string", "null"]
+      required:
+        - id
+
+    UpdateItemBody:
+      type: object
+      properties:
+        itemName:
+          type: string
+        itemQty:
+          type: string
+
+    Kit:
+      type: object
+      properties:
+        kitID:
+          type: string
+        kitName:
+          type: ["string", "null"]
+        kitQty:
+          type: ["string", "null"]
+        boxName:
+          type: ["string", "null"]
+        frameName:
+          type: ["string", "null"]
+        cubeName:
+          type: ["string", "null"]
+        itemCount:
+          type: integer
+      required:
+        - kitID
+        - itemCount
+
+    UpdateKitBody:
+      type: object
+      properties:
+        kitName:
+          type: string
+        kitQty:
+          type: string
+
+    InventoryItem:
+      type: object
+      properties:
+        ID:
+          type: integer
+        BoxNo:
+          type: ["string", "null"]
+        BoxTypeId:
+          type: ["string", "null"]
+        SkuCode:
+          type: ["string", "null"]
+        ItemName:
+          type: ["string", "null"]
+        Qty:
+          type: ["integer", "null"]
+        BatchNoSrNo:
+          type: ["string", "null"]
+        MfgDate:
+          type: ["string", "null"]
+        ExpDate:
+          type: ["string", "null"]
+        CompanyName:
+          type: ["string", "null"]
+      required:
+        - ID
+
+    UpdateInventoryItemBody:
+      type: object
+      properties:
+        ItemName:
+          type: string
+        Qty:
+          type: integer

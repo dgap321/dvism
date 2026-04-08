@@ -8,3 +8,93 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export interface Item {
+  id: number;
+  /** @nullable */
+  sNo?: string | null;
+  /** @nullable */
+  cubeID?: string | null;
+  /** @nullable */
+  cubeName?: string | null;
+  /** @nullable */
+  frameID?: string | null;
+  /** @nullable */
+  frameName?: string | null;
+  /** @nullable */
+  boxID?: string | null;
+  /** @nullable */
+  boxName?: string | null;
+  /** @nullable */
+  kitID?: string | null;
+  /** @nullable */
+  kitName?: string | null;
+  /** @nullable */
+  kitQty?: string | null;
+  /** @nullable */
+  itemID?: string | null;
+  /** @nullable */
+  itemName?: string | null;
+  /** @nullable */
+  itemQty?: string | null;
+  /** @nullable */
+  status?: string | null;
+  /** @nullable */
+  category?: string | null;
+}
+
+export interface UpdateItemBody {
+  itemName?: string;
+  itemQty?: string;
+}
+
+export interface Kit {
+  kitID: string;
+  /** @nullable */
+  kitName?: string | null;
+  /** @nullable */
+  kitQty?: string | null;
+  /** @nullable */
+  boxName?: string | null;
+  /** @nullable */
+  frameName?: string | null;
+  /** @nullable */
+  cubeName?: string | null;
+  itemCount: number;
+}
+
+export interface UpdateKitBody {
+  kitName?: string;
+  kitQty?: string;
+}
+
+export interface InventoryItem {
+  ID: number;
+  /** @nullable */
+  BoxNo?: string | null;
+  /** @nullable */
+  BoxTypeId?: string | null;
+  /** @nullable */
+  SkuCode?: string | null;
+  /** @nullable */
+  ItemName?: string | null;
+  /** @nullable */
+  Qty?: number | null;
+  /** @nullable */
+  BatchNoSrNo?: string | null;
+  /** @nullable */
+  MfgDate?: string | null;
+  /** @nullable */
+  ExpDate?: string | null;
+  /** @nullable */
+  CompanyName?: string | null;
+}
+
+export interface UpdateInventoryItemBody {
+  ItemName?: string;
+  Qty?: number;
+}

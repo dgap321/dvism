@@ -6,4 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./errorResponse";
 export * from "./healthStatus";
+export * from "./inventoryItem";
+export * from "./item";
+export * from "./kit";
+export * from "./updateInventoryItemBody";
+export * from "./updateItemBody";
+export * from "./updateKitBody";

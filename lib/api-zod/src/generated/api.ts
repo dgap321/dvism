@@ -14,3 +14,158 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * Returns all items from the English database
+ * @summary List all items
+ */
+export const ListItemsResponseItem = zod.object({
+  id: zod.number(),
+  sNo: zod.string().nullish(),
+  cubeID: zod.string().nullish(),
+  cubeName: zod.string().nullish(),
+  frameID: zod.string().nullish(),
+  frameName: zod.string().nullish(),
+  boxID: zod.string().nullish(),
+  boxName: zod.string().nullish(),
+  kitID: zod.string().nullish(),
+  kitName: zod.string().nullish(),
+  kitQty: zod.string().nullish(),
+  itemID: zod.string().nullish(),
+  itemName: zod.string().nullish(),
+  itemQty: zod.string().nullish(),
+  status: zod.string().nullish(),
+  category: zod.string().nullish(),
+});
+export const ListItemsResponse = zod.array(ListItemsResponseItem);
+
+/**
+ * @summary Update item name and/or quantity
+ */
+export const UpdateItemParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateItemBody = zod.object({
+  itemName: zod.string().optional(),
+  itemQty: zod.string().optional(),
+});
+
+export const UpdateItemResponse = zod.object({
+  id: zod.number(),
+  sNo: zod.string().nullish(),
+  cubeID: zod.string().nullish(),
+  cubeName: zod.string().nullish(),
+  frameID: zod.string().nullish(),
+  frameName: zod.string().nullish(),
+  boxID: zod.string().nullish(),
+  boxName: zod.string().nullish(),
+  kitID: zod.string().nullish(),
+  kitName: zod.string().nullish(),
+  kitQty: zod.string().nullish(),
+  itemID: zod.string().nullish(),
+  itemName: zod.string().nullish(),
+  itemQty: zod.string().nullish(),
+  status: zod.string().nullish(),
+  category: zod.string().nullish(),
+});
+
+/**
+ * @summary Delete an item
+ */
+export const DeleteItemParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * Returns distinct kits from the English database
+ * @summary List all kits (distinct)
+ */
+export const ListKitsResponseItem = zod.object({
+  kitID: zod.string(),
+  kitName: zod.string().nullish(),
+  kitQty: zod.string().nullish(),
+  boxName: zod.string().nullish(),
+  frameName: zod.string().nullish(),
+  cubeName: zod.string().nullish(),
+  itemCount: zod.number(),
+});
+export const ListKitsResponse = zod.array(ListKitsResponseItem);
+
+/**
+ * @summary Update kit name and/or quantity for all matching kitID rows
+ */
+export const UpdateKitParams = zod.object({
+  kitId: zod.coerce.string(),
+});
+
+export const UpdateKitBody = zod.object({
+  kitName: zod.string().optional(),
+  kitQty: zod.string().optional(),
+});
+
+export const UpdateKitResponse = zod.object({
+  kitID: zod.string(),
+  kitName: zod.string().nullish(),
+  kitQty: zod.string().nullish(),
+  boxName: zod.string().nullish(),
+  frameName: zod.string().nullish(),
+  cubeName: zod.string().nullish(),
+  itemCount: zod.number(),
+});
+
+/**
+ * @summary Delete all rows matching a kitID
+ */
+export const DeleteKitParams = zod.object({
+  kitId: zod.coerce.string(),
+});
+
+/**
+ * @summary List all inventory items from MotherCuber3
+ */
+export const ListInventoryResponseItem = zod.object({
+  ID: zod.number(),
+  BoxNo: zod.string().nullish(),
+  BoxTypeId: zod.string().nullish(),
+  SkuCode: zod.string().nullish(),
+  ItemName: zod.string().nullish(),
+  Qty: zod.number().nullish(),
+  BatchNoSrNo: zod.string().nullish(),
+  MfgDate: zod.string().nullish(),
+  ExpDate: zod.string().nullish(),
+  CompanyName: zod.string().nullish(),
+});
+export const ListInventoryResponse = zod.array(ListInventoryResponseItem);
+
+/**
+ * @summary Update inventory item name and/or quantity
+ */
+export const UpdateInventoryItemParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateInventoryItemBody = zod.object({
+  ItemName: zod.string().optional(),
+  Qty: zod.number().optional(),
+});
+
+export const UpdateInventoryItemResponse = zod.object({
+  ID: zod.number(),
+  BoxNo: zod.string().nullish(),
+  BoxTypeId: zod.string().nullish(),
+  SkuCode: zod.string().nullish(),
+  ItemName: zod.string().nullish(),
+  Qty: zod.number().nullish(),
+  BatchNoSrNo: zod.string().nullish(),
+  MfgDate: zod.string().nullish(),
+  ExpDate: zod.string().nullish(),
+  CompanyName: zod.string().nullish(),
+});
+
+/**
+ * @summary Delete an inventory item
+ */
+export const DeleteInventoryItemParams = zod.object({
+  id: zod.coerce.number(),
+});
