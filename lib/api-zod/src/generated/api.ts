@@ -85,6 +85,8 @@ export const ListKitsResponseItem = zod.object({
   kitID: zod.string(),
   kitName: zod.string().nullish(),
   kitQty: zod.string().nullish(),
+  kitPhoto: zod.string().nullish(),
+  kitCode: zod.string().nullish(),
   boxName: zod.string().nullish(),
   frameName: zod.string().nullish(),
   cubeName: zod.string().nullish(),

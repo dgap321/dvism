@@ -13,6 +13,10 @@ export interface Kit {
   /** @nullable */
   kitQty?: string | null;
   /** @nullable */
+  kitPhoto?: string | null;
+  /** @nullable */
+  kitCode?: string | null;
+  /** @nullable */
   boxName?: string | null;
   /** @nullable */
   frameName?: string | null;

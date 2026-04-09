@@ -143,7 +143,16 @@ export function KitsTable() {
 
   const handleAddItemClick = (kit: Kit) => {
     setAddingToKit(kit);
-    setAddItemForm({ itemID: "", itemName: "", itemQty: "", status: "A", category: "", kitPhoto: "", kitCode: "", itemPhoto: "" });
+    setAddItemForm({
+      itemID: "",
+      itemName: "",
+      itemQty: "",
+      status: "A",
+      category: "",
+      kitPhoto: kit.kitPhoto ?? "",
+      kitCode: kit.kitCode ?? "",
+      itemPhoto: "",
+    });
   };
 
   const handleAddItemSave = () => {
@@ -384,8 +393,9 @@ export function KitsTable() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-2">
-                <Label htmlFor="addKitCode">
+                <Label htmlFor="addKitCode" className="flex items-center gap-1">
                   Kit Code
+                  <span className="text-[10px] font-normal text-primary/70 bg-primary/10 rounded px-1">auto-filled</span>
                 </Label>
                 <Input
                   id="addKitCode"
@@ -393,11 +403,13 @@ export function KitsTable() {
                   value={addItemForm.kitCode}
                   onChange={(e) => setAddItemForm((prev) => ({ ...prev, kitCode: e.target.value }))}
                   data-testid="input-add-kit-code"
+                  className={addItemForm.kitCode ? "bg-muted/40" : ""}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="addKitPhoto">
-                  Kit Photo <span className="text-muted-foreground font-normal">(URL or filename)</span>
+                <Label htmlFor="addKitPhoto" className="flex items-center gap-1">
+                  Kit Photo
+                  <span className="text-[10px] font-normal text-primary/70 bg-primary/10 rounded px-1">auto-filled</span>
                 </Label>
                 <Input
                   id="addKitPhoto"
@@ -405,6 +417,7 @@ export function KitsTable() {
                   value={addItemForm.kitPhoto}
                   onChange={(e) => setAddItemForm((prev) => ({ ...prev, kitPhoto: e.target.value }))}
                   data-testid="input-add-kit-photo"
+                  className={addItemForm.kitPhoto ? "bg-muted/40" : ""}
                 />
               </div>
             </div>
@@ -412,7 +425,7 @@ export function KitsTable() {
             <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded border border-muted">
               Kit: <strong>{addingToKit?.kitID}</strong> &bull; Box: {addingToKit?.boxName} &bull; Frame: {addingToKit?.frameName}
               <br />
-              Cube, frame, and box are inherited from this kit automatically. Kit photo/code will default to the kit&apos;s existing values if left blank.
+              Kit Code &amp; Kit Photo are pre-filled from the database. You can override them if needed.
             </div>
           </div>
           <DialogFooter>

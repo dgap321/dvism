@@ -346,6 +346,10 @@ components:
           type: ["string", "null"]
         kitQty:
           type: ["string", "null"]
+        kitPhoto:
+          type: ["string", "null"]
+        kitCode:
+          type: ["string", "null"]
         boxName:
           type: ["string", "null"]
         frameName:

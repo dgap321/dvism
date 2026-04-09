@@ -14,7 +14,8 @@ router.get("/kits", async (_req, res): Promise<void> => {
   const db = getDb();
   const rows = db
     .prepare(
-      `SELECT kitID, kitName, kitQty, boxName, frameName, cubeName,
+      `SELECT kitID, kitName, kitQty, kitPhoto, kitCode,
+              boxName, frameName, cubeName,
               COUNT(DISTINCT itemID) as itemCount
        FROM EnglishMotherCube
        GROUP BY kitID
