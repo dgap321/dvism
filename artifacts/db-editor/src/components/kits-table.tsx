@@ -53,6 +53,9 @@ export function KitsTable() {
     itemQty: "",
     status: "A",
     category: "",
+    kitPhoto: "",
+    kitCode: "",
+    itemPhoto: "",
   });
 
   const { toast } = useToast();
@@ -140,7 +143,7 @@ export function KitsTable() {
 
   const handleAddItemClick = (kit: Kit) => {
     setAddingToKit(kit);
-    setAddItemForm({ itemID: "", itemName: "", itemQty: "", status: "A", category: "" });
+    setAddItemForm({ itemID: "", itemName: "", itemQty: "", status: "A", category: "", kitPhoto: "", kitCode: "", itemPhoto: "" });
   };
 
   const handleAddItemSave = () => {
@@ -163,6 +166,9 @@ export function KitsTable() {
           itemQty: addItemForm.itemQty.trim(),
           status: addItemForm.status.trim() || "A",
           category: addItemForm.category.trim(),
+          kitPhoto: addItemForm.kitPhoto.trim(),
+          kitCode: addItemForm.kitCode.trim(),
+          itemPhoto: addItemForm.itemPhoto.trim(),
         },
       },
       {
@@ -291,11 +297,17 @@ export function KitsTable() {
 
       {/* Add Item Dialog */}
       <Dialog open={!!addingToKit} onOpenChange={(open) => !open && setAddingToKit(null)}>
-        <DialogContent className="sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Item to {addingToKit?.kitName}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+
+            {/* ── Item details ── */}
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Item Details
+            </p>
+
             <div className="grid gap-2">
               <Label htmlFor="addItemID">Item ID <span className="text-destructive">*</span></Label>
               <Input
@@ -306,6 +318,7 @@ export function KitsTable() {
                 data-testid="input-add-item-id"
               />
             </div>
+
             <div className="grid gap-2">
               <Label htmlFor="addItemName">Item Name <span className="text-destructive">*</span></Label>
               <Input
@@ -316,17 +329,18 @@ export function KitsTable() {
                 data-testid="input-add-item-name"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="addItemQty">Quantity <span className="text-destructive">*</span></Label>
-              <Input
-                id="addItemQty"
-                placeholder="e.g. 10"
-                value={addItemForm.itemQty}
-                onChange={(e) => setAddItemForm((prev) => ({ ...prev, itemQty: e.target.value }))}
-                data-testid="input-add-item-qty"
-              />
-            </div>
+
             <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label htmlFor="addItemQty">Quantity <span className="text-destructive">*</span></Label>
+                <Input
+                  id="addItemQty"
+                  placeholder="e.g. 10"
+                  value={addItemForm.itemQty}
+                  onChange={(e) => setAddItemForm((prev) => ({ ...prev, itemQty: e.target.value }))}
+                  data-testid="input-add-item-qty"
+                />
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="addItemStatus">Status</Label>
                 <Input
@@ -337,21 +351,68 @@ export function KitsTable() {
                   data-testid="input-add-item-status"
                 />
               </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="addItemCategory">Category</Label>
+              <Input
+                id="addItemCategory"
+                placeholder="e.g. Medicine"
+                value={addItemForm.category}
+                onChange={(e) => setAddItemForm((prev) => ({ ...prev, category: e.target.value }))}
+                data-testid="input-add-item-category"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="addItemPhoto">
+                Item Photo <span className="text-muted-foreground font-normal">(URL or filename)</span>
+              </Label>
+              <Input
+                id="addItemPhoto"
+                placeholder="e.g. https://... or bandage.jpg"
+                value={addItemForm.itemPhoto}
+                onChange={(e) => setAddItemForm((prev) => ({ ...prev, itemPhoto: e.target.value }))}
+                data-testid="input-add-item-photo"
+              />
+            </div>
+
+            {/* ── Kit details ── */}
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mt-2">
+              Kit Details
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-2">
-                <Label htmlFor="addItemCategory">Category</Label>
+                <Label htmlFor="addKitCode">
+                  Kit Code
+                </Label>
                 <Input
-                  id="addItemCategory"
-                  placeholder="e.g. Medicine"
-                  value={addItemForm.category}
-                  onChange={(e) => setAddItemForm((prev) => ({ ...prev, category: e.target.value }))}
-                  data-testid="input-add-item-category"
+                  id="addKitCode"
+                  placeholder="e.g. KIT-001"
+                  value={addItemForm.kitCode}
+                  onChange={(e) => setAddItemForm((prev) => ({ ...prev, kitCode: e.target.value }))}
+                  data-testid="input-add-kit-code"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="addKitPhoto">
+                  Kit Photo <span className="text-muted-foreground font-normal">(URL or filename)</span>
+                </Label>
+                <Input
+                  id="addKitPhoto"
+                  placeholder="e.g. antibiotic-kit.jpg"
+                  value={addItemForm.kitPhoto}
+                  onChange={(e) => setAddItemForm((prev) => ({ ...prev, kitPhoto: e.target.value }))}
+                  data-testid="input-add-kit-photo"
                 />
               </div>
             </div>
+
             <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded border border-muted">
               Kit: <strong>{addingToKit?.kitID}</strong> &bull; Box: {addingToKit?.boxName} &bull; Frame: {addingToKit?.frameName}
               <br />
-              The item will inherit cube, frame, and box from this kit automatically.
+              Cube, frame, and box are inherited from this kit automatically. Kit photo/code will default to the kit&apos;s existing values if left blank.
             </div>
           </div>
           <DialogFooter>

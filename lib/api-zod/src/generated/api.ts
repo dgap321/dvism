@@ -134,6 +134,9 @@ export const AddItemToKitBody = zod.object({
   itemQty: zod.string(),
   status: zod.string().optional(),
   category: zod.string().optional(),
+  kitPhoto: zod.string().optional(),
+  kitCode: zod.string().optional(),
+  itemPhoto: zod.string().optional(),
 });
 
 /**

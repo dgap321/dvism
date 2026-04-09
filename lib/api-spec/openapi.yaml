@@ -409,6 +409,12 @@ components:
           type: string
         category:
           type: string
+        kitPhoto:
+          type: string
+        kitCode:
+          type: string
+        itemPhoto:
+          type: string
 
     UpdateInventoryItemBody:
       type: object

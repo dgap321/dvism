@@ -102,7 +102,8 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
 
   const kitRow = db
     .prepare(
-      `SELECT cubeID, cubeName, frameID, frameName, boxID, boxName, kitName, kitQty
+      `SELECT cubeID, cubeName, frameID, frameName, boxID, boxName,
+              kitName, kitQty, kitPhoto, kitCode
        FROM EnglishMotherCube WHERE kitID = ? LIMIT 1`
     )
     .get(params.data.kitId) as {
@@ -114,6 +115,8 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
     boxName: string;
     kitName: string;
     kitQty: string;
+    kitPhoto: string;
+    kitCode: string;
   } | undefined;
 
   if (!kitRow) {
@@ -129,12 +132,17 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
 
   const newSno = String(maxSno + 1);
 
+  const kitPhotoVal  = body.data.kitPhoto  ?? kitRow.kitPhoto  ?? "";
+  const kitCodeVal   = body.data.kitCode   ?? kitRow.kitCode   ?? "";
+  const itemPhotoVal = body.data.itemPhoto ?? "";
+
   const engResult = db
     .prepare(
       `INSERT INTO EnglishMotherCube
         (sNo, cubeID, cubeName, frameID, frameName, boxID, boxName,
-         kitID, kitName, kitQty, itemID, itemName, itemQty, status, category)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+         kitID, kitName, kitQty, kitPhoto, kitCode,
+         itemID, itemName, itemQty, itemPhoto, status, category)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     )
     .run(
       newSno,
@@ -147,9 +155,12 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
       params.data.kitId,
       kitRow.kitName,
       kitRow.kitQty,
+      kitPhotoVal,
+      kitCodeVal,
       body.data.itemID,
       body.data.itemName,
       body.data.itemQty,
+      itemPhotoVal,
       body.data.status ?? "A",
       body.data.category ?? ""
     );
@@ -157,8 +168,9 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
   db.prepare(
     `INSERT INTO HindiMotherCube
       (sNo, cubeID, cubeName, frameID, frameName, boxID, boxName,
-       kitID, kitName, kitQty, itemID, itemName, itemQty, status, category)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+       kitID, kitName, kitQty, kitPhoto, kitCode,
+       itemID, itemName, itemQty, itemPhoto, status, category)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
   ).run(
     newSno,
     kitRow.cubeID,
@@ -170,9 +182,12 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
     params.data.kitId,
     kitRow.kitName,
     kitRow.kitQty,
+    kitPhotoVal,
+    kitCodeVal,
     body.data.itemID,
     body.data.itemName,
     body.data.itemQty,
+    itemPhotoVal,
     body.data.status ?? "A",
     body.data.category ?? ""
   );

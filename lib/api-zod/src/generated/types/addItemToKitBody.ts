@@ -12,4 +12,7 @@ export interface AddItemToKitBody {
   itemQty: string;
   status?: string;
   category?: string;
+  kitPhoto?: string;
+  kitCode?: string;
+  itemPhoto?: string;
 }
