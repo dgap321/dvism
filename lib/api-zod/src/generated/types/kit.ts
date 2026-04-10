@@ -7,6 +7,7 @@
  */
 
 export interface Kit {
+  kitCode: string;
   kitID: string;
   /** @nullable */
   kitName?: string | null;
@@ -14,8 +15,6 @@ export interface Kit {
   kitQty?: string | null;
   /** @nullable */
   kitPhoto?: string | null;
-  /** @nullable */
-  kitCode?: string | null;
   /** @nullable */
   boxName?: string | null;
   /** @nullable */

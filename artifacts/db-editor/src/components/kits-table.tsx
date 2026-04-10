@@ -177,12 +177,12 @@ function KitItemsPanel({
     itemName: "", itemQty: "", itemPhoto: "", status: "A", category: "",
   });
 
-  const kitItemsKey = ["kit-items", kit.kitID];
+  const kitItemsKey = ["kit-items", kit.kitCode];
 
   const { data: items = [], isLoading } = useQuery<KitItem[]>({
     queryKey: kitItemsKey,
     queryFn: async () => {
-      const res = await fetch(`/api/kits/${kit.kitID}/items`);
+      const res = await fetch(`/api/kits/${kit.kitCode}/items`);
       if (!res.ok) throw new Error("Failed to load items");
       return res.json();
     },
@@ -425,7 +425,7 @@ export function KitsTable() {
   const handleSaveKitEdit = () => {
     if (!editingKit) return;
     updateKit.mutate(
-      { kitId: editingKit.kitID, data: { kitName: editKitForm.kitName, kitQty: editKitForm.kitQty } },
+      { kitId: editingKit.kitCode, data: { kitName: editKitForm.kitName, kitQty: editKitForm.kitQty } },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListKitsQueryKey() });
@@ -440,13 +440,13 @@ export function KitsTable() {
   const handleDeleteKitConfirm = () => {
     if (!deletingKit) return;
     deleteKit.mutate(
-      { kitId: deletingKit.kitID },
+      { kitId: deletingKit.kitCode },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListKitsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getListItemsQueryKey() });
           setDeletingKit(null);
-          if (expandedKitId === deletingKit.kitID) setExpandedKitId(null);
+          if (expandedKitId === deletingKit.kitCode) setExpandedKitId(null);
           toast({ title: "Kit deleted" });
         },
         onError: () => toast({ variant: "destructive", title: "Failed to delete kit" }),
@@ -484,7 +484,7 @@ export function KitsTable() {
     }
     addItemToKit.mutate(
       {
-        kitId: addingToKit.kitID,
+        kitId: addingToKit.kitCode,
         data: {
           itemName: addItemForm.itemName.trim(),
           itemQty: addItemForm.itemQty.trim(),
@@ -499,7 +499,7 @@ export function KitsTable() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListKitsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getListItemsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: ["kit-items", addingToKit.kitID] });
+          queryClient.invalidateQueries({ queryKey: ["kit-items", addingToKit.kitCode] });
           setAddingToKit(null);
           toast({ title: `Item added to ${addingToKit.kitName}` });
         },
@@ -508,8 +508,8 @@ export function KitsTable() {
     );
   };
 
-  const toggleExpand = (kitId: string) => {
-    setExpandedKitId((prev) => (prev === kitId ? null : kitId));
+  const toggleExpand = (kitCode: string) => {
+    setExpandedKitId((prev) => (prev === kitCode ? null : kitCode));
   };
 
   return (
@@ -563,14 +563,14 @@ export function KitsTable() {
               </TableRow>
             ) : (
               filteredKits.map((kit) => {
-                const isExpanded = expandedKitId === kit.kitID;
+                const isExpanded = expandedKitId === kit.kitCode;
                 return (
-                  <Fragment key={kit.kitID}>
+                  <Fragment key={kit.kitCode}>
                     {/* Kit row */}
                     <TableRow
                       className="cursor-pointer hover:bg-muted/20"
-                      data-testid={`row-kit-${kit.kitID}`}
-                      onClick={() => toggleExpand(kit.kitID)}
+                      data-testid={`row-kit-${kit.kitCode}`}
+                      onClick={() => toggleExpand(kit.kitCode)}
                     >
                       <TableCell className="pr-0 pl-3">
                         {isExpanded
@@ -578,7 +578,8 @@ export function KitsTable() {
                           : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                       </TableCell>
                       <TableCell className="font-mono text-xs text-muted-foreground">
-                        {kit.kitID}
+                        <span className="text-primary/80 font-semibold">{kit.kitCode}</span>
+                        <span className="ml-1 text-muted-foreground/50">{kit.kitID}</span>
                       </TableCell>
                       <TableCell className="font-medium text-foreground">
                         <div className="flex items-center gap-2">
@@ -601,14 +602,14 @@ export function KitsTable() {
                           <Button
                             variant="ghost" size="icon"
                             onClick={() => handleEditKitClick(kit)}
-                            data-testid={`button-edit-kit-${kit.kitID}`}
+                            data-testid={`button-edit-kit-${kit.kitCode}`}
                           >
                             <Edit className="h-4 w-4 text-muted-foreground" />
                           </Button>
                           <Button
                             variant="ghost" size="icon"
                             onClick={() => setDeletingKit(kit)}
-                            data-testid={`button-delete-kit-${kit.kitID}`}
+                            data-testid={`button-delete-kit-${kit.kitCode}`}
                           >
                             <Trash2 className="h-4 w-4 text-destructive/80" />
                           </Button>
@@ -750,7 +751,7 @@ export function KitsTable() {
             </div>
 
             <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded border border-muted">
-              Kit: <strong>{addingToKit?.kitID}</strong> &bull; Box: {addingToKit?.boxName} &bull;
+              Kit: <strong>{addingToKit?.kitCode}</strong> ({addingToKit?.kitID}) &bull; Box: {addingToKit?.boxName} &bull;
               Frame: {addingToKit?.frameName} &bull; Cube: {addingToKit?.cubeName}
             </div>
           </div>
@@ -784,7 +785,7 @@ export function KitsTable() {
                 data-testid="input-edit-kit-qty" />
             </div>
             <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded border border-muted">
-              Kit ID: <strong>{editingKit?.kitID}</strong> &bull; Items: {editingKit?.itemCount}
+              Kit Code: <strong>{editingKit?.kitCode}</strong> &bull; Kit ID: {editingKit?.kitID} &bull; Items: {editingKit?.itemCount}
               <br /><em>Note: Updates all items belonging to this kit ID.</em>
             </div>
           </div>
