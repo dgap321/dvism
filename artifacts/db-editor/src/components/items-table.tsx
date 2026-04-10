@@ -162,6 +162,7 @@ export function ItemsTable() {
               <TableHead className="w-[60px]">Qty</TableHead>
               <TableHead>Kit</TableHead>
               <TableHead>Box</TableHead>
+              <TableHead className="w-[110px]">Cube / Box ID</TableHead>
               <TableHead className="w-[70px]">Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -176,13 +177,14 @@ export function ItemsTable() {
                   <TableCell><Skeleton className="h-4 w-10" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-12" /></TableCell>
                   <TableCell><Skeleton className="h-8 w-16 ml-auto" /></TableCell>
                 </TableRow>
               ))
             ) : filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={9} className="h-32 text-center text-muted-foreground">
                   No items found matching your search.
                 </TableCell>
               </TableRow>
@@ -256,9 +258,25 @@ export function ItemsTable() {
                         </div>
                         {item.frameName && (
                           <div className="text-[11px] text-muted-foreground/70 truncate">
-                            {item.frameName} &bull; {item.cubeName}
+                            {item.frameName}
                           </div>
                         )}
+                      </TableCell>
+
+                      {/* Cube / Box ID */}
+                      <TableCell>
+                        <div className="flex flex-col gap-0.5">
+                          {item.cubeName && (
+                            <span className="inline-flex w-fit items-center rounded border border-border px-1.5 py-0.5 text-[10px] font-mono font-medium text-foreground">
+                              {item.cubeName}
+                            </span>
+                          )}
+                          {item.boxID && (
+                            <span className="text-[11px] font-mono text-primary/70">
+                              {item.boxID}
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
 
                       {/* Status */}
@@ -297,7 +315,7 @@ export function ItemsTable() {
                     {/* Expanded detail row */}
                     {isExpanded && (
                       <TableRow className="bg-muted/20 hover:bg-muted/20">
-                        <TableCell colSpan={8} className="py-2 px-4">
+                        <TableCell colSpan={9} className="py-2 px-4">
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1 text-xs pl-6">
                             <div>
                               <span className="text-muted-foreground uppercase tracking-wide text-[10px] font-semibold">Item ID</span>
