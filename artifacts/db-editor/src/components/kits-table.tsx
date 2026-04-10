@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, Fragment } from "react";
+import { useState, useEffect, useRef, Fragment, useMemo } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Search, Edit, Trash2, AlertCircle, Package, Plus,
-  ChevronDown, ChevronRight, Image as ImageIcon,
+  ChevronDown, ChevronRight, Image as ImageIcon, X, Filter,
 } from "lucide-react";
 import { Kit } from "@workspace/api-client-react";
 import {
@@ -153,6 +153,74 @@ function ItemNameAutocomplete({
       {value.trim().length >= 3 && suggestions.length === 0 && open && (
         <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow text-xs text-muted-foreground px-3 py-2">
           No matching items found
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Box-name autocomplete search (for the filter bar)
+// ---------------------------------------------------------------------------
+function BoxNameAutocomplete({
+  value,
+  onChange,
+  suggestions,
+  onSelect,
+  onClear,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  suggestions: string[];
+  onSelect: (name: string) => void;
+  onClear: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filtered = value.length >= 1
+    ? suggestions.filter((s) => s.toLowerCase().includes(value.toLowerCase()))
+    : [];
+
+  return (
+    <div ref={wrapRef} className="relative w-64">
+      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <Input
+        placeholder="Search by box name..."
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => { if (value.length >= 1) setOpen(true); }}
+        className="pl-9 pr-7"
+        data-testid="input-box-name-search"
+      />
+      {value && (
+        <button
+          onClick={onClear}
+          className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
+          aria-label="Clear"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+      {open && filtered.length > 0 && (
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-white shadow-lg max-h-56 overflow-y-auto">
+          {filtered.map((name) => (
+            <div
+              key={name}
+              className="px-3 py-2 text-sm cursor-pointer hover:bg-muted"
+              onMouseDown={(e) => { e.preventDefault(); onSelect(name); setOpen(false); }}
+            >
+              {name}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -390,6 +458,9 @@ function KitItemsPanel({
 // ---------------------------------------------------------------------------
 export function KitsTable() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [boxNameSearch, setBoxNameSearch] = useState("");
+  const [cubeFilter, setCubeFilter] = useState<"" | "CUBE-1" | "CUBE-2">("");
+  const [boxIdFilter, setBoxIdFilter] = useState("");
   const [expandedKitId, setExpandedKitId] = useState<string | null>(null);
   const [editingKit, setEditingKit] = useState<Kit | null>(null);
   const [deletingKit, setDeletingKit] = useState<Kit | null>(null);
@@ -411,12 +482,35 @@ export function KitsTable() {
   const deleteKit = useDeleteKit();
   const addItemToKit = useAddItemToKit();
 
-  const filteredKits = kits.filter(
-    (kit) =>
-      kit.kitName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      kit.kitID.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      kit.cubeName?.toLowerCase().includes(searchQuery.toLowerCase())
+  // Derived suggestion lists
+  const allBoxNames = useMemo(
+    () => [...new Set(kits.map((k) => k.boxName).filter(Boolean))].sort() as string[],
+    [kits]
   );
+  const boxIdsForCube = useMemo(
+    () =>
+      cubeFilter
+        ? [...new Set(kits.filter((k) => k.cubeName === cubeFilter).map((k) => k.boxID))].sort()
+        : [],
+    [kits, cubeFilter]
+  );
+
+  const filteredKits = kits.filter((kit) => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const match =
+        kit.kitName?.toLowerCase().includes(q) ||
+        kit.kitID.toLowerCase().includes(q) ||
+        kit.kitCode?.toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    if (boxNameSearch) {
+      if (!kit.boxName?.toLowerCase().includes(boxNameSearch.toLowerCase())) return false;
+    }
+    if (cubeFilter && kit.cubeName !== cubeFilter) return false;
+    if (boxIdFilter && kit.boxID !== boxIdFilter) return false;
+    return true;
+  });
 
   // Kit edit handlers
   const handleEditKitClick = (kit: Kit) => {
@@ -519,21 +613,75 @@ export function KitsTable() {
     setExpandedKitId((prev) => (prev === key ? null : key));
   };
 
+  const hasActiveFilter = searchQuery || boxNameSearch || cubeFilter || boxIdFilter;
+
   return (
-    <div className="space-y-4">
-      {/* Search + count */}
-      <div className="flex items-center justify-between">
-        <div className="relative w-72">
+    <div className="space-y-3">
+      {/* Row 1: kit name search + box name search + result count */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Kit name / code search */}
+        <div className="relative w-60">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search kits by name or ID..."
+            placeholder="Search kit name or ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
             data-testid="input-kits-search"
           />
         </div>
-        <div className="text-sm text-muted-foreground font-medium">
+        {/* Box name autocomplete */}
+        <BoxNameAutocomplete
+          value={boxNameSearch}
+          onChange={setBoxNameSearch}
+          suggestions={allBoxNames}
+          onSelect={(name) => setBoxNameSearch(name)}
+          onClear={() => setBoxNameSearch("")}
+        />
+        {/* Cube filter buttons */}
+        <div className="flex items-center gap-1 ml-1">
+          <Filter className="h-4 w-4 text-muted-foreground mr-1" />
+          {(["", "CUBE-1", "CUBE-2"] as const).map((c) => (
+            <button
+              key={c || "all"}
+              onClick={() => { setCubeFilter(c); setBoxIdFilter(""); }}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                cubeFilter === c
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-white text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+              }`}
+              data-testid={`btn-filter-cube-${c || "all"}`}
+            >
+              {c || "All Cubes"}
+            </button>
+          ))}
+        </div>
+        {/* BoxID dropdown — only when a cube is selected */}
+        {cubeFilter && (
+          <div className="relative">
+            <select
+              value={boxIdFilter}
+              onChange={(e) => setBoxIdFilter(e.target.value)}
+              className="h-9 rounded-md border border-border bg-white px-3 pr-8 text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              data-testid="select-box-id-filter"
+            >
+              <option value="">All Boxes</option>
+              {boxIdsForCube.map((id) => (
+                <option key={id} value={id}>{id}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {/* Clear all filters */}
+        {hasActiveFilter && (
+          <button
+            onClick={() => { setSearchQuery(""); setBoxNameSearch(""); setCubeFilter(""); setBoxIdFilter(""); }}
+            className="flex items-center gap-1 px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-destructive/60 hover:text-destructive transition-colors"
+          >
+            <X className="h-3 w-3" /> Clear all
+          </button>
+        )}
+        <div className="ml-auto text-sm text-muted-foreground font-medium whitespace-nowrap">
           {isLoading ? "Loading..." : `${filteredKits.length} kits found`}
         </div>
       </div>
