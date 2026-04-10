@@ -1,4 +1,4 @@
-import { Download, Database, Layers, Package, Activity } from "lucide-react";
+import { Download, Database, Layers, Package, Activity, FolderArchive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ItemsTable } from "@/components/items-table";
@@ -8,6 +8,10 @@ import { InventoryTable } from "@/components/inventory-table";
 export default function Dashboard() {
   const handleExport = () => {
     window.open("/api/export", "_blank");
+  };
+
+  const handleExportStudio = () => {
+    window.open("/api/export-studio", "_blank");
   };
 
   return (
@@ -28,9 +32,13 @@ export default function Dashboard() {
               <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span>
               System Online
             </div>
-            <Button onClick={handleExport} className="gap-2 shadow-sm">
+            <Button onClick={handleExport} variant="outline" className="gap-2 shadow-sm">
               <Download className="h-4 w-4" />
               Export SQLite
+            </Button>
+            <Button onClick={handleExportStudio} className="gap-2 shadow-sm">
+              <FolderArchive className="h-4 w-4" />
+              Export Studio File
             </Button>
           </div>
         </div>
