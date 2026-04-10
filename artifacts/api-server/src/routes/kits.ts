@@ -18,59 +18,41 @@ router.get("/kits", async (_req, res): Promise<void> => {
   const rows = db
     .prepare(
       `SELECT kitCode, kitID, kitName, kitQty, kitPhoto,
-              boxName, frameName, cubeName,
+              boxID, boxName, frameName, cubeName,
               COUNT(DISTINCT itemID) as itemCount
        FROM EnglishMotherCube
        WHERE kitCode IS NOT NULL AND kitCode != ''
-       GROUP BY kitCode, cubeName, boxName
-       ORDER BY kitName, cubeName, boxName`
+       GROUP BY kitCode, cubeName, boxID, boxName
+       ORDER BY kitName, cubeName, boxName, boxID`
     )
     .all();
   res.json(rows);
 });
 
 // ---------------------------------------------------------------------------
-// GET /api/kits/:kitId/items?cube=CUBE-1&box=BOX+NAME  — kitId is kitCode
+// GET /api/kits/:kitId/items?cube=CUBE-1&boxId=B22  — kitId is kitCode
 // ---------------------------------------------------------------------------
 router.get("/kits/:kitId/items", async (req, res): Promise<void> => {
   const kitCode = Array.isArray(req.params.kitId)
     ? req.params.kitId[0]
     : req.params.kitId;
-  const cube = req.query.cube as string | undefined;
-  const box  = req.query.box  as string | undefined;
+  const cube  = req.query.cube  as string | undefined;
+  const boxId = req.query.boxId as string | undefined;
   const db = getDb();
 
-  let rows;
-  if (cube && box) {
-    rows = db
-      .prepare(
-        `SELECT id, itemID, itemName, itemQty, itemPhoto, status, category
-         FROM EnglishMotherCube
-         WHERE kitCode = ? AND cubeName = ? AND boxName = ?
-         ORDER BY CAST(REPLACE(itemID, 'I', '') AS INTEGER)`
-      )
-      .all(kitCode, cube, box);
-  } else if (cube) {
-    rows = db
-      .prepare(
-        `SELECT id, itemID, itemName, itemQty, itemPhoto, status, category
-         FROM EnglishMotherCube
-         WHERE kitCode = ? AND cubeName = ?
-         ORDER BY CAST(REPLACE(itemID, 'I', '') AS INTEGER)`
-      )
-      .all(kitCode, cube);
-  } else {
-    rows = db
-      .prepare(
-        `SELECT id, itemID, itemName, itemQty, itemPhoto, status, category
-         FROM EnglishMotherCube
-         WHERE kitCode = ?
-         AND cubeName = (SELECT cubeName FROM EnglishMotherCube WHERE kitCode = ? LIMIT 1)
-         AND boxName  = (SELECT boxName  FROM EnglishMotherCube WHERE kitCode = ? LIMIT 1)
-         ORDER BY CAST(REPLACE(itemID, 'I', '') AS INTEGER)`
-      )
-      .all(kitCode, kitCode, kitCode);
-  }
+  const whereParts = ["kitCode = ?"];
+  const whereVals: string[] = [kitCode];
+  if (cube)  { whereParts.push("cubeName = ?"); whereVals.push(cube); }
+  if (boxId) { whereParts.push("boxID = ?");    whereVals.push(boxId); }
+
+  const rows = db
+    .prepare(
+      `SELECT id, itemID, itemName, itemQty, itemPhoto, status, category
+       FROM EnglishMotherCube
+       WHERE ${whereParts.join(" AND ")}
+       ORDER BY CAST(REPLACE(itemID, 'I', '') AS INTEGER)`
+    )
+    .all(...(whereVals as [string, ...string[]]));
   res.json(rows);
 });
 
@@ -156,13 +138,15 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
 
   const db = getDb();
 
-  // Get reference row scoped to the exact (kitCode, cubeName, boxName) placement
-  const targetCube = body.data.cubeName;
-  const targetBox  = body.data.boxName;
+  // Get reference row scoped to the exact (kitCode, cubeName, boxID, boxName) placement
+  const targetCube  = body.data.cubeName;
+  const targetBoxId = body.data.boxID;
+  const targetBox   = body.data.boxName;
   const whereParts = ["kitCode = ?"];
   const whereVals: string[] = [params.data.kitId];
-  if (targetCube) { whereParts.push("cubeName = ?"); whereVals.push(targetCube); }
-  if (targetBox)  { whereParts.push("boxName = ?");  whereVals.push(targetBox);  }
+  if (targetCube)  { whereParts.push("cubeName = ?"); whereVals.push(targetCube);  }
+  if (targetBoxId) { whereParts.push("boxID = ?");    whereVals.push(targetBoxId); }
+  if (targetBox)   { whereParts.push("boxName = ?");  whereVals.push(targetBox);   }
 
   const kitRow = db
     .prepare(
@@ -200,14 +184,14 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
 
   const newSno = String(maxSno + 1);
 
-  // Auto-assign itemID scoped to this exact (kitCode, cubeName, boxName) placement
+  // Auto-assign itemID scoped to this exact (kitCode, cubeName, boxID, boxName) placement
   const maxItemN = (
     db
       .prepare(
         `SELECT MAX(CAST(REPLACE(itemID, 'I', '') AS INTEGER)) as maxN
-         FROM EnglishMotherCube WHERE kitCode = ? AND cubeName = ? AND boxName = ?`
+         FROM EnglishMotherCube WHERE kitCode = ? AND cubeName = ? AND boxID = ?`
       )
-      .get(params.data.kitId, kitRow.cubeName, kitRow.boxName) as { maxN: number | null }
+      .get(params.data.kitId, kitRow.cubeName, kitRow.boxID) as { maxN: number | null }
   ).maxN ?? 0;
   const assignedItemID = `I${maxItemN + 1}`;
 

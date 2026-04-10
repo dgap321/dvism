@@ -177,14 +177,14 @@ function KitItemsPanel({
     itemName: "", itemQty: "", itemPhoto: "", status: "A", category: "",
   });
 
-  const kitItemsKey = ["kit-items", kit.kitCode, kit.cubeName, kit.boxName];
+  const kitItemsKey = ["kit-items", kit.kitCode, kit.cubeName, kit.boxID];
 
   const { data: items = [], isLoading } = useQuery<KitItem[]>({
     queryKey: kitItemsKey,
     queryFn: async () => {
-      const cube = encodeURIComponent(kit.cubeName);
-      const box  = encodeURIComponent(kit.boxName);
-      const res = await fetch(`/api/kits/${kit.kitCode}/items?cube=${cube}&box=${box}`);
+      const cube  = encodeURIComponent(kit.cubeName);
+      const boxId = encodeURIComponent(kit.boxID);
+      const res = await fetch(`/api/kits/${kit.kitCode}/items?cube=${cube}&boxId=${boxId}`);
       if (!res.ok) throw new Error("Failed to load items");
       return res.json();
     },
@@ -496,6 +496,7 @@ export function KitsTable() {
           kitPhoto: addItemForm.kitPhoto.trim(),
           kitCode: addItemForm.kitCode.trim(),
           cubeName: addingToKit.cubeName,
+          boxID: addingToKit.boxID,
           boxName: addingToKit.boxName,
         },
       },
@@ -503,7 +504,7 @@ export function KitsTable() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListKitsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getListItemsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: ["kit-items", addingToKit.kitCode, addingToKit.cubeName, addingToKit.boxName] });
+          queryClient.invalidateQueries({ queryKey: ["kit-items", addingToKit.kitCode, addingToKit.cubeName, addingToKit.boxID] });
           setAddingToKit(null);
           toast({ title: `Item added to ${addingToKit.kitName}` });
         },
@@ -512,7 +513,7 @@ export function KitsTable() {
     );
   };
 
-  const compositeKey = (kit: Kit) => `${kit.kitCode}::${kit.cubeName}::${kit.boxName}`;
+  const compositeKey = (kit: Kit) => `${kit.kitCode}::${kit.cubeName}::${kit.boxID}`;
 
   const toggleExpand = (key: string) => {
     setExpandedKitId((prev) => (prev === key ? null : key));
@@ -599,6 +600,7 @@ export function KitsTable() {
                         {kit.itemCount} items
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
+                        <span className="font-mono text-xs text-primary/60 mr-1">{kit.boxID}</span>
                         {kit.boxName} / {kit.frameName}
                       </TableCell>
                       <TableCell>
