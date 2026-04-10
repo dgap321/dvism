@@ -49,6 +49,9 @@ export const UpdateItemParams = zod.object({
 export const UpdateItemBody = zod.object({
   itemName: zod.string().optional(),
   itemQty: zod.string().optional(),
+  itemPhoto: zod.string().optional(),
+  category: zod.string().optional(),
+  status: zod.string().optional(),
 });
 
 export const UpdateItemResponse = zod.object({

@@ -20,6 +20,26 @@ router.get("/items", async (_req, res): Promise<void> => {
   res.json(rows);
 });
 
+// Search items by name (autocomplete) — distinct entries across entire DB
+router.get("/items/search", async (req, res): Promise<void> => {
+  const q = String(req.query.q ?? "").trim();
+  if (q.length < 3) {
+    res.json([]);
+    return;
+  }
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT DISTINCT itemName, itemPhoto, category, status
+       FROM EnglishMotherCube
+       WHERE itemName LIKE ? AND itemName IS NOT NULL AND itemName != ''
+       ORDER BY itemName
+       LIMIT 30`
+    )
+    .all(`${q}%`);
+  res.json(rows);
+});
+
 router.patch("/items/:id", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id)
     ? req.params.id[0]
@@ -55,6 +75,18 @@ router.patch("/items/:id", async (req, res): Promise<void> => {
   if (body.data.itemQty !== undefined) {
     updates.push("itemQty = ?");
     values.push(body.data.itemQty);
+  }
+  if (body.data.itemPhoto !== undefined) {
+    updates.push("itemPhoto = ?");
+    values.push(body.data.itemPhoto);
+  }
+  if (body.data.category !== undefined) {
+    updates.push("category = ?");
+    values.push(body.data.category);
+  }
+  if (body.data.status !== undefined) {
+    updates.push("status = ?");
+    values.push(body.data.status);
   }
 
   if (updates.length > 0) {

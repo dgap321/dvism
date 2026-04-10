@@ -25,6 +25,22 @@ router.get("/kits", async (_req, res): Promise<void> => {
   res.json(rows);
 });
 
+// Get all items for a specific kit
+router.get("/kits/:kitId/items", async (req, res): Promise<void> => {
+  const rawKitId = Array.isArray(req.params.kitId)
+    ? req.params.kitId[0]
+    : req.params.kitId;
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT id, itemID, itemName, itemQty, itemPhoto, status, category
+       FROM EnglishMotherCube WHERE kitID = ?
+       ORDER BY CAST(REPLACE(itemID, 'I', '') AS INTEGER)`
+    )
+    .all(rawKitId);
+  res.json(rows);
+});
+
 router.patch("/kits/:kitId", async (req, res): Promise<void> => {
   const rawKitId = Array.isArray(req.params.kitId)
     ? req.params.kitId[0]

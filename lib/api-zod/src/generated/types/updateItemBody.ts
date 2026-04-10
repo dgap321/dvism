@@ -9,4 +9,7 @@
 export interface UpdateItemBody {
   itemName?: string;
   itemQty?: string;
+  itemPhoto?: string;
+  category?: string;
+  status?: string;
 }
