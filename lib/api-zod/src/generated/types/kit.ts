@@ -15,8 +15,7 @@ export interface Kit {
   kitQty?: string | null;
   /** @nullable */
   kitPhoto?: string | null;
-  /** @nullable */
-  boxName?: string | null;
+  boxName: string;
   /** @nullable */
   frameName?: string | null;
   cubeName: string;

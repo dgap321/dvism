@@ -177,13 +177,14 @@ function KitItemsPanel({
     itemName: "", itemQty: "", itemPhoto: "", status: "A", category: "",
   });
 
-  const kitItemsKey = ["kit-items", kit.kitCode, kit.cubeName];
+  const kitItemsKey = ["kit-items", kit.kitCode, kit.cubeName, kit.boxName];
 
   const { data: items = [], isLoading } = useQuery<KitItem[]>({
     queryKey: kitItemsKey,
     queryFn: async () => {
       const cube = encodeURIComponent(kit.cubeName);
-      const res = await fetch(`/api/kits/${kit.kitCode}/items?cube=${cube}`);
+      const box  = encodeURIComponent(kit.boxName);
+      const res = await fetch(`/api/kits/${kit.kitCode}/items?cube=${cube}&box=${box}`);
       if (!res.ok) throw new Error("Failed to load items");
       return res.json();
     },
@@ -495,13 +496,14 @@ export function KitsTable() {
           kitPhoto: addItemForm.kitPhoto.trim(),
           kitCode: addItemForm.kitCode.trim(),
           cubeName: addingToKit.cubeName,
+          boxName: addingToKit.boxName,
         },
       },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListKitsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getListItemsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: ["kit-items", addingToKit.kitCode, addingToKit.cubeName] });
+          queryClient.invalidateQueries({ queryKey: ["kit-items", addingToKit.kitCode, addingToKit.cubeName, addingToKit.boxName] });
           setAddingToKit(null);
           toast({ title: `Item added to ${addingToKit.kitName}` });
         },
@@ -510,7 +512,7 @@ export function KitsTable() {
     );
   };
 
-  const compositeKey = (kit: Kit) => `${kit.kitCode}::${kit.cubeName}`;
+  const compositeKey = (kit: Kit) => `${kit.kitCode}::${kit.cubeName}::${kit.boxName}`;
 
   const toggleExpand = (key: string) => {
     setExpandedKitId((prev) => (prev === key ? null : key));
