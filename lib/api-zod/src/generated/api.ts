@@ -142,6 +142,7 @@ export const AddItemToKitBody = zod.object({
   kitPhoto: zod.string().optional(),
   kitCode: zod.string().optional(),
   itemPhoto: zod.string().optional(),
+  cubeName: zod.string().optional(),
 });
 
 /**

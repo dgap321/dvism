@@ -11,7 +11,7 @@ import {
 const router: IRouter = Router();
 
 // ---------------------------------------------------------------------------
-// GET /api/kits  — one row per unique kitCode (138 kits)
+// GET /api/kits  — one row per unique (kitCode, cubeName) — ~175 rows
 // ---------------------------------------------------------------------------
 router.get("/kits", async (_req, res): Promise<void> => {
   const db = getDb();
@@ -22,33 +22,44 @@ router.get("/kits", async (_req, res): Promise<void> => {
               COUNT(DISTINCT itemID) as itemCount
        FROM EnglishMotherCube
        WHERE kitCode IS NOT NULL AND kitCode != ''
-       GROUP BY kitCode
-       ORDER BY kitName`
+       GROUP BY kitCode, cubeName
+       ORDER BY kitName, cubeName`
     )
     .all();
   res.json(rows);
 });
 
 // ---------------------------------------------------------------------------
-// GET /api/kits/:kitId/items  — kitId here is kitCode
+// GET /api/kits/:kitId/items?cube=CUBE-1  — kitId is kitCode
 // ---------------------------------------------------------------------------
 router.get("/kits/:kitId/items", async (req, res): Promise<void> => {
   const kitCode = Array.isArray(req.params.kitId)
     ? req.params.kitId[0]
     : req.params.kitId;
+  const cube = req.query.cube as string | undefined;
   const db = getDb();
-  // Pull items from the first cube that has this kitCode
-  const rows = db
-    .prepare(
-      `SELECT id, itemID, itemName, itemQty, itemPhoto, status, category
-       FROM EnglishMotherCube
-       WHERE kitCode = ?
-       AND cubeName = (
-         SELECT cubeName FROM EnglishMotherCube WHERE kitCode = ? LIMIT 1
-       )
-       ORDER BY CAST(REPLACE(itemID, 'I', '') AS INTEGER)`
-    )
-    .all(kitCode, kitCode);
+  // If cube is specified, filter by it; otherwise fall back to whichever cube has rows
+  let rows;
+  if (cube) {
+    rows = db
+      .prepare(
+        `SELECT id, itemID, itemName, itemQty, itemPhoto, status, category
+         FROM EnglishMotherCube
+         WHERE kitCode = ? AND cubeName = ?
+         ORDER BY CAST(REPLACE(itemID, 'I', '') AS INTEGER)`
+      )
+      .all(kitCode, cube);
+  } else {
+    rows = db
+      .prepare(
+        `SELECT id, itemID, itemName, itemQty, itemPhoto, status, category
+         FROM EnglishMotherCube
+         WHERE kitCode = ?
+         AND cubeName = (SELECT cubeName FROM EnglishMotherCube WHERE kitCode = ? LIMIT 1)
+         ORDER BY CAST(REPLACE(itemID, 'I', '') AS INTEGER)`
+      )
+      .all(kitCode, kitCode);
+  }
   res.json(rows);
 });
 
@@ -134,17 +145,19 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
 
   const db = getDb();
 
-  // Get one reference row for this kit (from CUBE-1 if possible)
+  // Get one reference row for this kit, preferring the cube the user is looking at
+  const targetCube = body.data.cubeName;
   const kitRow = db
     .prepare(
       `SELECT cubeID, cubeName, frameID, frameName, boxID, boxName,
               kitID, kitName, kitQty, kitPhoto, kitCode
        FROM EnglishMotherCube
        WHERE kitCode = ?
+       ${targetCube ? "AND cubeName = ?" : ""}
        ORDER BY CASE WHEN cubeName = 'CUBE-1' THEN 0 ELSE 1 END
        LIMIT 1`
     )
-    .get(params.data.kitId) as {
+    .get(...([params.data.kitId, ...(targetCube ? [targetCube] : [])] as [string, ...string[]])) as {
     cubeID: string;
     cubeName: string;
     frameID: string;
@@ -171,14 +184,14 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
 
   const newSno = String(maxSno + 1);
 
-  // Auto-assign itemID scoped to this kitCode (same cube)
+  // Auto-assign itemID scoped to this kitCode + target cube
   const maxItemN = (
     db
       .prepare(
         `SELECT MAX(CAST(REPLACE(itemID, 'I', '') AS INTEGER)) as maxN
-         FROM EnglishMotherCube WHERE kitCode = ?`
+         FROM EnglishMotherCube WHERE kitCode = ? AND cubeName = ?`
       )
-      .get(params.data.kitId) as { maxN: number | null }
+      .get(params.data.kitId, kitRow.cubeName) as { maxN: number | null }
   ).maxN ?? 0;
   const assignedItemID = `I${maxItemN + 1}`;
 

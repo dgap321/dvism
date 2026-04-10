@@ -177,12 +177,13 @@ function KitItemsPanel({
     itemName: "", itemQty: "", itemPhoto: "", status: "A", category: "",
   });
 
-  const kitItemsKey = ["kit-items", kit.kitCode];
+  const kitItemsKey = ["kit-items", kit.kitCode, kit.cubeName];
 
   const { data: items = [], isLoading } = useQuery<KitItem[]>({
     queryKey: kitItemsKey,
     queryFn: async () => {
-      const res = await fetch(`/api/kits/${kit.kitCode}/items`);
+      const cube = encodeURIComponent(kit.cubeName);
+      const res = await fetch(`/api/kits/${kit.kitCode}/items?cube=${cube}`);
       if (!res.ok) throw new Error("Failed to load items");
       return res.json();
     },
@@ -446,7 +447,7 @@ export function KitsTable() {
           queryClient.invalidateQueries({ queryKey: getListKitsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getListItemsQueryKey() });
           setDeletingKit(null);
-          if (expandedKitId === deletingKit.kitCode) setExpandedKitId(null);
+          if (expandedKitId === compositeKey(deletingKit)) setExpandedKitId(null);
           toast({ title: "Kit deleted" });
         },
         onError: () => toast({ variant: "destructive", title: "Failed to delete kit" }),
@@ -493,13 +494,14 @@ export function KitsTable() {
           category: addItemForm.category.trim(),
           kitPhoto: addItemForm.kitPhoto.trim(),
           kitCode: addItemForm.kitCode.trim(),
+          cubeName: addingToKit.cubeName,
         },
       },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListKitsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getListItemsQueryKey() });
-          queryClient.invalidateQueries({ queryKey: ["kit-items", addingToKit.kitCode] });
+          queryClient.invalidateQueries({ queryKey: ["kit-items", addingToKit.kitCode, addingToKit.cubeName] });
           setAddingToKit(null);
           toast({ title: `Item added to ${addingToKit.kitName}` });
         },
@@ -508,8 +510,10 @@ export function KitsTable() {
     );
   };
 
-  const toggleExpand = (kitCode: string) => {
-    setExpandedKitId((prev) => (prev === kitCode ? null : kitCode));
+  const compositeKey = (kit: Kit) => `${kit.kitCode}::${kit.cubeName}`;
+
+  const toggleExpand = (key: string) => {
+    setExpandedKitId((prev) => (prev === key ? null : key));
   };
 
   return (
@@ -563,14 +567,15 @@ export function KitsTable() {
               </TableRow>
             ) : (
               filteredKits.map((kit) => {
-                const isExpanded = expandedKitId === kit.kitCode;
+                const key = compositeKey(kit);
+                const isExpanded = expandedKitId === key;
                 return (
-                  <Fragment key={kit.kitCode}>
+                  <Fragment key={key}>
                     {/* Kit row */}
                     <TableRow
                       className="cursor-pointer hover:bg-muted/20"
-                      data-testid={`row-kit-${kit.kitCode}`}
-                      onClick={() => toggleExpand(kit.kitCode)}
+                      data-testid={`row-kit-${kit.kitCode}-${kit.cubeName}`}
+                      onClick={() => toggleExpand(key)}
                     >
                       <TableCell className="pr-0 pl-3">
                         {isExpanded
@@ -594,8 +599,10 @@ export function KitsTable() {
                       <TableCell className="text-muted-foreground text-sm">
                         {kit.boxName} / {kit.frameName}
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {kit.cubeName}
+                      <TableCell>
+                        <Badge variant="outline" className="text-[10px] font-mono shrink-0">
+                          {kit.cubeName}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-1">

@@ -19,7 +19,6 @@ export interface Kit {
   boxName?: string | null;
   /** @nullable */
   frameName?: string | null;
-  /** @nullable */
-  cubeName?: string | null;
+  cubeName: string;
   itemCount: number;
 }

@@ -15,4 +15,5 @@ export interface AddItemToKitBody {
   kitPhoto?: string;
   kitCode?: string;
   itemPhoto?: string;
+  cubeName?: string;
 }
