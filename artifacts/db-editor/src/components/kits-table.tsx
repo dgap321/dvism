@@ -490,7 +490,13 @@ export function KitsTable() {
   const boxIdsForCube = useMemo(
     () =>
       cubeFilter
-        ? [...new Set(kits.filter((k) => k.cubeName === cubeFilter).map((k) => k.boxID))].sort()
+        ? [...new Set(kits.filter((k) => k.cubeName === cubeFilter).map((k) => k.boxID))].sort(
+            (a, b) => {
+              const na = parseInt(a.replace(/\D/g, ""), 10);
+              const nb = parseInt(b.replace(/\D/g, ""), 10);
+              return isNaN(na) || isNaN(nb) ? a.localeCompare(b) : na - nb;
+            }
+          )
         : [],
     [kits, cubeFilter]
   );
