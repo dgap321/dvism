@@ -85,15 +85,40 @@ router.delete("/items/:id", async (req, res): Promise<void> => {
 
   const db = getDb();
   const existing = db
-    .prepare("SELECT id FROM EnglishMotherCube WHERE id = ?")
-    .get(params.data.id);
+    .prepare("SELECT id, kitID, itemID FROM EnglishMotherCube WHERE id = ?")
+    .get(params.data.id) as { id: number; kitID: string; itemID: string } | undefined;
   if (!existing) {
     res.status(404).json({ error: "Item not found" });
     return;
   }
 
+  const { kitID, itemID } = existing;
+  const deletedN = parseInt(itemID.replace(/^I/, ""), 10);
+
+  // Delete from both tables
   db.prepare("DELETE FROM EnglishMotherCube WHERE id = ?").run(params.data.id);
   db.prepare("DELETE FROM HindiMotherCube WHERE id = ?").run(params.data.id);
+
+  // Re-sequence: all items in the same kit with itemID number > deletedN get decremented by 1
+  if (!isNaN(deletedN)) {
+    // Collect ids that need renumbering (ordered so we don't hit conflicts)
+    const toRenumber = db
+      .prepare(
+        `SELECT id, itemID
+         FROM EnglishMotherCube
+         WHERE kitID = ? AND CAST(REPLACE(itemID, 'I', '') AS INTEGER) > ?
+         ORDER BY CAST(REPLACE(itemID, 'I', '') AS INTEGER) ASC`
+      )
+      .all(kitID, deletedN) as { id: number; itemID: string }[];
+
+    for (const row of toRenumber) {
+      const n = parseInt(row.itemID.replace(/^I/, ""), 10);
+      const newItemID = `I${n - 1}`;
+      db.prepare("UPDATE EnglishMotherCube SET itemID = ? WHERE id = ?").run(newItemID, row.id);
+      db.prepare("UPDATE HindiMotherCube SET itemID = ? WHERE id = ?").run(newItemID, row.id);
+    }
+  }
+
   res.sendStatus(204);
 });
 

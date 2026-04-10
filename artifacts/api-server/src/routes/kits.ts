@@ -133,6 +133,17 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
 
   const newSno = String(maxSno + 1);
 
+  // Auto-assign itemID: find the max numeric suffix for this kitID and add 1
+  const maxItemN = (
+    db
+      .prepare(
+        `SELECT MAX(CAST(REPLACE(itemID, 'I', '') AS INTEGER)) as maxN
+         FROM EnglishMotherCube WHERE kitID = ?`
+      )
+      .get(params.data.kitId) as { maxN: number | null }
+  ).maxN ?? 0;
+  const assignedItemID = `I${maxItemN + 1}`;
+
   const kitPhotoVal  = body.data.kitPhoto  ?? kitRow.kitPhoto  ?? "";
   const kitCodeVal   = body.data.kitCode   ?? kitRow.kitCode   ?? "";
   const itemPhotoVal = body.data.itemPhoto ?? "";
@@ -158,7 +169,7 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
       kitRow.kitQty,
       kitPhotoVal,
       kitCodeVal,
-      body.data.itemID,
+      assignedItemID,
       body.data.itemName,
       body.data.itemQty,
       itemPhotoVal,
@@ -185,7 +196,7 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
     kitRow.kitQty,
     kitPhotoVal,
     kitCodeVal,
-    body.data.itemID,
+    assignedItemID,
     body.data.itemName,
     body.data.itemQty,
     itemPhotoVal,

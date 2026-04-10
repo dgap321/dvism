@@ -399,7 +399,6 @@ components:
     AddItemToKitBody:
       type: object
       required:
-        - itemID
         - itemName
         - itemQty
       properties:

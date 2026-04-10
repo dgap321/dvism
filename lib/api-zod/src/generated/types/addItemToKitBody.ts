@@ -7,7 +7,7 @@
  */
 
 export interface AddItemToKitBody {
-  itemID: string;
+  itemID?: string;
   itemName: string;
   itemQty: string;
   status?: string;

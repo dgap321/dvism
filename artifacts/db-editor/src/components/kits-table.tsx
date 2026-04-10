@@ -48,7 +48,6 @@ export function KitsTable() {
   const [addingToKit, setAddingToKit] = useState<Kit | null>(null);
   const [editForm, setEditForm] = useState({ kitName: "", kitQty: "" });
   const [addItemForm, setAddItemForm] = useState({
-    itemID: "",
     itemName: "",
     itemQty: "",
     status: "A",
@@ -144,7 +143,6 @@ export function KitsTable() {
   const handleAddItemClick = (kit: Kit) => {
     setAddingToKit(kit);
     setAddItemForm({
-      itemID: "",
       itemName: "",
       itemQty: "",
       status: "A",
@@ -157,11 +155,11 @@ export function KitsTable() {
 
   const handleAddItemSave = () => {
     if (!addingToKit) return;
-    if (!addItemForm.itemID.trim() || !addItemForm.itemName.trim() || !addItemForm.itemQty.trim()) {
+    if (!addItemForm.itemName.trim() || !addItemForm.itemQty.trim()) {
       toast({
         variant: "destructive",
         title: "Validation error",
-        description: "Item ID, Item Name, and Quantity are required.",
+        description: "Item Name and Quantity are required.",
       });
       return;
     }
@@ -170,7 +168,6 @@ export function KitsTable() {
       {
         kitId: addingToKit.kitID,
         data: {
-          itemID: addItemForm.itemID.trim(),
           itemName: addItemForm.itemName.trim(),
           itemQty: addItemForm.itemQty.trim(),
           status: addItemForm.status.trim() || "A",
@@ -317,15 +314,12 @@ export function KitsTable() {
               Item Details
             </p>
 
-            <div className="grid gap-2">
-              <Label htmlFor="addItemID">Item ID <span className="text-destructive">*</span></Label>
-              <Input
-                id="addItemID"
-                placeholder="e.g. I50"
-                value={addItemForm.itemID}
-                onChange={(e) => setAddItemForm((prev) => ({ ...prev, itemID: e.target.value }))}
-                data-testid="input-add-item-id"
-              />
+            <div className="flex items-center gap-2 text-xs bg-muted/40 border rounded px-3 py-2">
+              <span className="text-muted-foreground">Item ID</span>
+              <span className="inline-flex items-center rounded bg-primary/10 px-2 py-0.5 text-[11px] font-bold font-mono text-primary border border-primary/20">
+                auto-assigned
+              </span>
+              <span className="text-muted-foreground ml-auto">Will be set to the next ID in this kit</span>
             </div>
 
             <div className="grid gap-2">

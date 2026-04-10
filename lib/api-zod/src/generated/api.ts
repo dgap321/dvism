@@ -131,7 +131,7 @@ export const AddItemToKitParams = zod.object({
 });
 
 export const AddItemToKitBody = zod.object({
-  itemID: zod.string(),
+  itemID: zod.string().optional(),
   itemName: zod.string(),
   itemQty: zod.string(),
   status: zod.string().optional(),
