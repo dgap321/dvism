@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC_DIR = path.resolve(__dirname, "..", "src");
 const DB_PATH = path.resolve(SRC_DIR, "bhishma.db");
+const DB_ORIGINAL_PATH = path.resolve(SRC_DIR, "bhishma-original.db");
 const PRE_IMPORT_PATH = path.resolve(SRC_DIR, "bhishma-pre-import.db");
 
 export function hasPreImportBackup(): boolean {
@@ -126,6 +127,17 @@ export function importCSVToDb(
   }
 
   const db = new DatabaseSync(tempPath);
+
+  // Ensure skuCode + invBoxNo columns exist (may be missing after reset-db restores original)
+  const colMigrations = [
+    "ALTER TABLE EnglishMotherCube ADD COLUMN skuCode TEXT",
+    "ALTER TABLE HindiMotherCube ADD COLUMN skuCode TEXT",
+    "ALTER TABLE EnglishMotherCube ADD COLUMN invBoxNo TEXT",
+    "ALTER TABLE HindiMotherCube ADD COLUMN invBoxNo TEXT",
+  ];
+  for (const sql of colMigrations) {
+    try { db.exec(sql); } catch { /* column already exists */ }
+  }
 
   // Clear existing content tables
   db.exec("DELETE FROM EnglishMotherCube");
@@ -282,8 +294,58 @@ export function importCSVToDb(
     db.exec("COMMIT");
   } catch (err) {
     db.exec("ROLLBACK");
+    db.close();
     throw err;
   }
+
+  // ── Backfill kit + item photos from the original reference DB ────────────
+  // Runs AFTER the main import transaction is committed, so a photo failure
+  // does NOT roll back the imported data.
+  if (fs.existsSync(DB_ORIGINAL_PATH)) {
+    try {
+      const origDb = new DatabaseSync(DB_ORIGINAL_PATH);
+
+      const kitPhotoMap = new Map<string, string>();
+      (origDb.prepare(
+        `SELECT DISTINCT kitName, kitPhoto FROM EnglishMotherCube
+         WHERE kitPhoto IS NOT NULL AND kitPhoto != ''`
+      ).all() as { kitName: string; kitPhoto: string }[]).forEach((r) => {
+        if (!kitPhotoMap.has(r.kitName.trim().toUpperCase()))
+          kitPhotoMap.set(r.kitName.trim().toUpperCase(), r.kitPhoto);
+      });
+
+      const itemPhotoMap = new Map<string, string>();
+      (origDb.prepare(
+        `SELECT DISTINCT itemName, itemPhoto FROM EnglishMotherCube
+         WHERE itemPhoto IS NOT NULL AND itemPhoto != ''`
+      ).all() as { itemName: string; itemPhoto: string }[]).forEach((r) => {
+        if (!itemPhotoMap.has(r.itemName.trim().toUpperCase()))
+          itemPhotoMap.set(r.itemName.trim().toUpperCase(), r.itemPhoto);
+      });
+
+      origDb.close();
+
+      const updateKitEng = db.prepare(`UPDATE EnglishMotherCube SET kitPhoto = ? WHERE UPPER(TRIM(kitName)) = ?`);
+      const updateKitHin = db.prepare(`UPDATE HindiMotherCube SET kitPhoto = ? WHERE UPPER(TRIM(kitName)) = ?`);
+      const updateItemEng = db.prepare(`UPDATE EnglishMotherCube SET itemPhoto = ? WHERE UPPER(TRIM(itemName)) = ?`);
+      const updateItemHin = db.prepare(`UPDATE HindiMotherCube SET itemPhoto = ? WHERE UPPER(TRIM(itemName)) = ?`);
+
+      db.exec("BEGIN");
+      for (const [nameKey, photo] of kitPhotoMap) {
+        updateKitEng.run(photo, nameKey);
+        updateKitHin.run(photo, nameKey);
+      }
+      for (const [nameKey, photo] of itemPhotoMap) {
+        updateItemEng.run(photo, nameKey);
+        updateItemHin.run(photo, nameKey);
+      }
+      db.exec("COMMIT");
+    } catch {
+      // Non-fatal — import data is already committed; log and continue
+      try { db.exec("ROLLBACK"); } catch { /* ignore */ }
+    }
+  }
+
   db.close();
 
   // Atomically replace the live DB
