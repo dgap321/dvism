@@ -95,7 +95,7 @@ export default function Dashboard() {
       {/* Rounded floating header — two-row layout */}
       <div className="sticky top-0 z-10 px-4 pt-3">
         <div className="ios-header rounded-2xl">
-          <div className="container max-w-7xl mx-auto px-5 py-3 flex flex-col gap-2">
+          <div className="container max-w-7xl mx-auto px-5 py-3 flex flex-col items-center gap-2">
 
             {/* Row 1: logo + title */}
             <div className="flex items-center gap-3">
@@ -114,7 +114,7 @@ export default function Dashboard() {
             </div>
 
             {/* Row 2: action buttons */}
-            <div className="flex items-center flex-wrap gap-2 pb-1">
+            <div className="flex items-center flex-wrap justify-center gap-2 pb-1">
               <Button
                 onClick={() => openExport("sqlite")}
                 variant="outline" size="sm" className="gap-1.5 text-xs"
