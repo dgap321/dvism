@@ -142,7 +142,7 @@ export function InventoryTable() {
         </div>
       </div>
 
-      <div className="border rounded-md bg-white overflow-hidden">
+      <div className="border border-border/50 rounded-xl bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>

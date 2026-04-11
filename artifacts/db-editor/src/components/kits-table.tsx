@@ -122,7 +122,7 @@ function ItemNameAutocomplete({
         data-testid="input-add-item-name"
       />
       {open && suggestions.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-52 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-card border border-border/50 rounded-md shadow-lg max-h-52 overflow-y-auto">
           {suggestions.map((s) => (
             <button
               key={s.itemName}
@@ -151,7 +151,7 @@ function ItemNameAutocomplete({
         </div>
       )}
       {value.trim().length >= 3 && suggestions.length === 0 && open && (
-        <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow text-xs text-muted-foreground px-3 py-2">
+        <div className="absolute z-50 w-full mt-1 bg-card border border-border/50 rounded-md shadow text-xs text-muted-foreground px-3 py-2">
           No matching items found
         </div>
       )}
@@ -211,7 +211,7 @@ function BoxNameAutocomplete({
         </button>
       )}
       {open && filtered.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border bg-white shadow-lg max-h-56 overflow-y-auto">
+        <div className="absolute z-50 mt-1 w-full rounded-md border border-border/50 bg-card shadow-lg max-h-56 overflow-y-auto">
           {filtered.map((name) => (
             <div
               key={name}
@@ -350,7 +350,7 @@ function KitItemsPanel({
               </TableHeader>
               <TableBody>
                 {items.map((item) => (
-                  <TableRow key={item.id} className="bg-white hover:bg-muted/10">
+                  <TableRow key={item.id} className="hover:bg-white/[0.02]">
                     <TableCell className="py-1.5 font-mono text-xs text-muted-foreground">{item.itemID}</TableCell>
                     <TableCell className="py-1.5 text-sm font-medium">{item.itemName}</TableCell>
                     <TableCell className="py-1.5 text-sm">{item.itemQty}</TableCell>
@@ -654,7 +654,7 @@ export function KitsTable() {
               className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                 cubeFilter === c
                   ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-white text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                  : "bg-card text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
               }`}
               data-testid={`btn-filter-cube-${c || "all"}`}
             >
@@ -668,7 +668,7 @@ export function KitsTable() {
             <select
               value={boxIdFilter}
               onChange={(e) => setBoxIdFilter(e.target.value)}
-              className="h-9 rounded-md border border-border bg-white px-3 pr-8 text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="h-9 rounded-md border border-border bg-input px-3 pr-8 text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               data-testid="select-box-id-filter"
             >
               <option value="">All Boxes</option>
@@ -693,7 +693,7 @@ export function KitsTable() {
       </div>
 
       {/* Kit table */}
-      <div className="border rounded-md bg-white overflow-hidden">
+      <div className="border border-border/50 rounded-xl bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>

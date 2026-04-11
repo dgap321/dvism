@@ -152,7 +152,7 @@ export function ItemsTable() {
         </div>
       </div>
 
-      <div className="border rounded-md bg-white">
+      <div className="border border-border/50 rounded-xl bg-card">
         <Table>
           <TableHeader>
             <TableRow>

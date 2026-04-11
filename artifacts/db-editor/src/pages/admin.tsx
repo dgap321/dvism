@@ -126,44 +126,80 @@ export default function AdminPage() {
   if (isLoading) return null;
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <header className="bg-white border-b sticky top-0 z-10">
+    <div className="min-h-screen aurora-bg">
+      {/* Header */}
+      <header
+        className="sticky top-0 z-10 border-b"
+        style={{
+          background: "rgba(11, 16, 50, 0.75)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderColor: "rgba(255,255,255,0.07)",
+        }}
+      >
         <div className="container max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground mr-1">
+            <button
+              onClick={() => navigate("/")}
+              className="text-muted-foreground hover:text-foreground transition-colors mr-1"
+            >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <div className="bg-primary/10 p-2 rounded-md">
-              <Shield className="h-5 w-5 text-primary" />
+            <div
+              className="p-2 rounded-xl"
+              style={{ background: "linear-gradient(135deg, #3d72f0, #1ccfc8)" }}
+            >
+              <Shield className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="font-semibold text-lg leading-tight text-foreground">Admin Panel</h1>
-              <p className="text-xs text-muted-foreground">User Management</p>
+              <h1 className="font-bold text-base leading-tight gradient-text">Admin Panel</h1>
+              <p className="text-[11px] text-muted-foreground leading-none">User Management</p>
             </div>
           </div>
-          <Button onClick={() => { setAddForm({ username: "", password: "", role: "user" }); setAddOpen(true); }} className="gap-2">
-            <Plus className="h-4 w-4" /> Add User
+          <Button
+            onClick={() => { setAddForm({ username: "", password: "", role: "user" }); setAddOpen(true); }}
+            size="sm"
+            className="gap-2 gradient-button rounded-xl text-xs font-semibold"
+          >
+            <Plus className="h-3.5 w-3.5" /> Add User
           </Button>
         </div>
       </header>
 
       <main className="container max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b flex items-center justify-between">
-            <h2 className="font-semibold text-foreground">Users ({users.length})</h2>
-            <button onClick={fetchUsers} className="text-muted-foreground hover:text-foreground">
+        <div
+          className="glass-card rounded-2xl overflow-hidden"
+          style={{ border: "1px solid rgba(255,255,255,0.07)" }}
+        >
+          <div
+            className="px-6 py-4 flex items-center justify-between"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            <h2 className="font-semibold text-foreground text-sm">Users ({users.length})</h2>
+            <button
+              onClick={fetchUsers}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               <RefreshCw className={`h-4 w-4 ${fetching ? "animate-spin" : ""}`} />
             </button>
           </div>
-          <div className="divide-y">
+          <div className="divide-y divide-border/30">
             {users.map((u) => (
-              <div key={u.id} className="flex items-center justify-between px-6 py-4">
+              <div key={u.id} className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors">
                 <div className="flex items-center gap-3">
-                  <UserCircle className="h-9 w-9 text-muted-foreground/50" />
+                  <div
+                    className="flex items-center justify-center h-9 w-9 rounded-full"
+                    style={{ background: "rgba(74,122,242,0.15)", border: "1px solid rgba(74,122,242,0.25)" }}
+                  >
+                    <UserCircle className="h-6 w-6 text-primary/70" />
+                  </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-foreground">{u.username}</span>
-                      <Badge variant={u.role === "admin" ? "default" : "outline"} className="text-[10px]">
+                      <span className="font-medium text-foreground text-sm">{u.username}</span>
+                      <Badge
+                        variant={u.role === "admin" ? "default" : "outline"}
+                        className="text-[10px] px-1.5 py-0"
+                      >
                         {u.role}
                       </Badge>
                     </div>
@@ -174,17 +210,19 @@ export default function AdminPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
-                    variant="ghost" size="sm"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => { setChangePwUser(u); setNewPassword(""); setShowNewPw(false); }}
-                    className="gap-1.5 text-muted-foreground"
+                    className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                   >
                     <Key className="h-3.5 w-3.5" /> Change Password
                   </Button>
                   <Button
-                    variant="ghost" size="icon"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => setDeleteUser(u)}
                     disabled={u.id === user?.id}
-                    className="text-destructive/60 hover:text-destructive hover:bg-destructive/10"
+                    className="text-destructive/50 hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -231,7 +269,7 @@ export default function AdminPage() {
               <select
                 value={addForm.role}
                 onChange={(e) => setAddForm((f) => ({ ...f, role: e.target.value }))}
-                className="w-full h-9 rounded-md border border-border bg-white px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full h-9 rounded-md border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
