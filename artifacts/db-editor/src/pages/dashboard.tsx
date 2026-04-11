@@ -23,7 +23,7 @@ export default function Dashboard() {
               <Database className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="font-semibold text-lg leading-tight tracking-tight text-foreground">Bhishma DB</h1>
+              <h1 className="font-semibold text-lg leading-tight tracking-tight text-foreground">DB BHISHM TABLET</h1>
               <p className="text-xs text-muted-foreground leading-none">Supply Editor</p>
             </div>
           </div>
