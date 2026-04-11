@@ -187,8 +187,9 @@ export function importCSVToDb(
        kitID, kitName, kitPhoto, kitQty, itemID, itemName, itemPhoto, itemQty,
        status, kitExpiryDate, itemExpiryDate, kitAvailavleQty, itemAvailableQty,
        kitCode, triage1, triage2, triage3, catMedicine,
-       indication, contraindication, usage, category, comments)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+       indication, contraindication, usage, category, comments,
+       skuCode, invBoxNo)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `);
 
   // Insert into HindiMotherCube with same (English) data — Hindi fields blank
@@ -198,8 +199,9 @@ export function importCSVToDb(
        kitID, kitName, kitPhoto, kitQty, itemID, itemName, itemPhoto, itemQty,
        status, kitExpiryDate, itemExpiryDate, kitAvailavleQty, itemAvailableQty,
        kitCode, triage1, triage2, triage3, catMedicine,
-       indication, contraindication, usage, category, comments)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+       indication, contraindication, usage, category, comments,
+       skuCode, invBoxNo)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `);
 
   // Insert into MotherCuber3
@@ -257,6 +259,8 @@ export function importCSVToDb(
         kitCode,              // kitCode: KT0001...
         "", "", "", "",
         "", "", "", "", "",
+        row.sku_code,         // skuCode — links to MotherCuber3.SkuCode
+        row.cc_no,            // invBoxNo — links to MotherCuber3.BoxNo
       ];
 
       insertEng.run(...params);

@@ -59,7 +59,7 @@ router.patch("/items/:id", async (req, res): Promise<void> => {
   const db = getDb();
   const existing = db
     .prepare("SELECT * FROM EnglishMotherCube WHERE id = ?")
-    .get(params.data.id);
+    .get(params.data.id) as Record<string, unknown> | undefined;
   if (!existing) {
     res.status(404).json({ error: "Item not found" });
     return;
@@ -97,6 +97,17 @@ router.patch("/items/:id", async (req, res): Promise<void> => {
     db.prepare(
       `UPDATE HindiMotherCube SET ${updates.join(", ")} WHERE id = ?`
     ).run(...values);
+
+    // Sync itemName change to MotherCuber3 (Inventory) using skuCode + invBoxNo link
+    if (body.data.itemName !== undefined) {
+      const skuCode = existing["skuCode"] as string | null;
+      const invBoxNo = existing["invBoxNo"] as string | null;
+      if (skuCode && invBoxNo) {
+        db.prepare(
+          `UPDATE MotherCuber3 SET ItemName = ? WHERE SkuCode = ? AND BoxNo = ?`
+        ).run(body.data.itemName, skuCode, invBoxNo);
+      }
+    }
   }
 
   const updated = db

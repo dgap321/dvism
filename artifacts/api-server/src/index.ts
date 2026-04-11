@@ -1,11 +1,12 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { initUsersTable, ensureSuperAdmin } from "./lib/auth-db";
-import { initBackup } from "./lib/db-sqlite";
+import { initBackup, migrateInventoryLink } from "./lib/db-sqlite";
 
 initUsersTable();
 ensureSuperAdmin();
 initBackup();
+migrateInventoryLink();
 
 const rawPort = process.env["PORT"];
 
