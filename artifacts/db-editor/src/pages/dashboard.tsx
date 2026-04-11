@@ -99,7 +99,7 @@ export default function Dashboard() {
               <img
                 src="/gryfon-logo.png"
                 alt="Gryfon Technologies"
-                style={{ filter: "brightness(0)", height: "32px", objectFit: "contain", opacity: 0.75 }}
+                style={{ filter: "brightness(0)", height: "46px", objectFit: "contain", opacity: 0.75 }}
               />
               <div className="h-5 w-px opacity-25" style={{ background: "rgba(0,0,0,0.6)" }} />
               <div>
@@ -111,10 +111,6 @@ export default function Dashboard() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mr-1">
-                <span className="flex h-2 w-2 rounded-full bg-emerald-500" style={{ boxShadow: "0 0 6px rgba(52,211,153,0.7)" }} />
-                Online
-              </div>
               <Button
                 onClick={() => openExport("sqlite")}
                 variant="outline" size="sm" className="gap-1.5 text-xs"

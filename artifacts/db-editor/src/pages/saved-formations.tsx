@@ -110,7 +110,7 @@ export default function SavedFormations() {
             <img
               src="/gryfon-logo.png"
               alt="Gryfon Technologies"
-              style={{ filter: "brightness(0)", opacity: 0.75, height: "34px", objectFit: "contain" }}
+              style={{ filter: "brightness(0)", opacity: 0.75, height: "46px", objectFit: "contain" }}
             />
             <div className="h-5 w-px opacity-30" style={{ background: "rgba(0,0,0,0.6)" }} />
             <div>
@@ -122,10 +122,6 @@ export default function SavedFormations() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mr-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500" style={{ boxShadow: "0 0 6px rgba(52,211,153,0.7)" }} />
-              System Online
-            </div>
             <Button
               onClick={() => navigate("/")}
               variant="outline"
