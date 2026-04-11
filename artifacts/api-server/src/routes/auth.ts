@@ -81,6 +81,10 @@ router.post("/auth/login", async (req: Request, res): Promise<void> => {
   req.session.username = user.username;
   req.session.role = user.role;
 
+  if (user.role === "admin") {
+    req.session.cookie.maxAge = 10 * 365 * 24 * 60 * 60 * 1000; // 10 years — no timeout
+  }
+
   req.session.save((err) => {
     if (err) {
       res.status(500).json({ error: "session_error", message: "Failed to create session." });
