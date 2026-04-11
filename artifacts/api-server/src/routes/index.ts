@@ -1,18 +1,32 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import healthRouter from "./health";
 import itemsRouter from "./items";
 import kitsRouter from "./kits";
 import inventoryRouter from "./inventory";
 import exportRouter from "./export";
 import exportStudioRouter from "./export-studio";
+import authRouter from "./auth";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
+router.use(authRouter);
+
+function requireAuth(req: Request, res: Response, next: NextFunction): void {
+  if (!req.session?.userId) {
+    res.status(401).json({ error: "unauthenticated", message: "Login required." });
+    return;
+  }
+  next();
+}
+
 router.use(healthRouter);
+router.use(requireAuth);
 router.use(itemsRouter);
 router.use(kitsRouter);
 router.use(inventoryRouter);
 router.use(exportRouter);
 router.use(exportStudioRouter);
+router.use(adminRouter);
 
 export default router;

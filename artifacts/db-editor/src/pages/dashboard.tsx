@@ -1,17 +1,27 @@
-import { Download, Database, Layers, Package, Activity, FolderArchive } from "lucide-react";
+import { Download, Database, Layers, Package, Activity, FolderArchive, Shield, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ItemsTable } from "@/components/items-table";
 import { KitsTable } from "@/components/kits-table";
 import { InventoryTable } from "@/components/inventory-table";
+import { useAuth } from "@/lib/auth";
+import { useLocation } from "wouter";
 
 export default function Dashboard() {
+  const { user, logout } = useAuth();
+  const [, navigate] = useLocation();
+
   const handleExport = () => {
     window.open("/api/export", "_blank");
   };
 
   const handleExportStudio = () => {
     window.open("/api/export-studio", "_blank");
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
   };
 
   return (
@@ -36,9 +46,18 @@ export default function Dashboard() {
               <Download className="h-4 w-4" />
               Export SQLite
             </Button>
-            <Button onClick={handleExportStudio} className="gap-2 shadow-sm">
+            <Button onClick={handleExportStudio} variant="outline" className="gap-2 shadow-sm">
               <FolderArchive className="h-4 w-4" />
               Export Studio File
+            </Button>
+            {user?.role === "admin" && (
+              <Button onClick={() => navigate("/admin")} variant="outline" className="gap-2 shadow-sm">
+                <Shield className="h-4 w-4" />
+                Admin
+              </Button>
+            )}
+            <Button onClick={handleLogout} variant="ghost" size="icon" title="Sign out">
+              <LogOut className="h-4 w-4 text-muted-foreground" />
             </Button>
           </div>
         </div>

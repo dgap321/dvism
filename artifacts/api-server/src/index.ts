@@ -1,5 +1,8 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { initUsersTable } from "./lib/auth-db";
+
+initUsersTable();
 
 const rawPort = process.env["PORT"];
 
