@@ -132,19 +132,53 @@ export function importCSVToDb(
   db.exec("DELETE FROM HindiMotherCube");
   db.exec("DELETE FROM MotherCuber3");
 
-  // Build kit code mapping: unique (mc_name + cc_no + kitname) → kitCode
-  const kitKeyToCode = new Map<string, string>();
-  const kitKeyToId = new Map<string, string>();
-  let kitCounter = 1;
+  // ── Build hierarchical ID mappings matching original DB conventions ──
 
-  for (const row of rows) {
-    const key = `${row.mc_name}||${row.cc_no}||${row.kitname}`;
-    if (!kitKeyToCode.has(key)) {
-      kitKeyToCode.set(key, `KT${String(kitCounter).padStart(4, "0")}`);
-      kitKeyToId.set(key, `K${kitCounter}`);
-      kitCounter++;
+  // cubeID: unique mc_name → C1, C2...
+  const cubeNames = [...new Set(rows.map((r) => r.mc_name))].sort();
+  const cubeNameToId = new Map<string, string>();
+  cubeNames.forEach((name, i) => cubeNameToId.set(name, `C${i + 1}`));
+
+  // boxID: unique cc_no (global, per cube) → B1, B2...
+  const boxKeys = [...new Set(rows.map((r) => `${r.mc_name}||${r.cc_no}`))].sort();
+  const boxKeyToId = new Map<string, string>();
+  boxKeys.forEach((key, i) => boxKeyToId.set(key, `B${i + 1}`));
+
+  // frameID: derive from first segment of cc_no (e.g. "1/3" → frameID "F1")
+  const frameKeyToId = new Map<string, string>();
+  const frameKeyToName = new Map<string, string>();
+  for (const key of boxKeys) {
+    const ccNo = key.split("||")[1] ?? "";
+    const frameNum = ccNo.split("/")[0] ?? "1";
+    const fKey = `${key.split("||")[0]}||${frameNum}`;
+    if (!frameKeyToId.has(fKey)) {
+      const n = frameKeyToId.size + 1;
+      frameKeyToId.set(fKey, `F${n}`);
+      frameKeyToName.set(fKey, `FRAME-${n}`);
     }
   }
+
+  // kitCode + kitID: unique (mc_name + cc_no + kitname)
+  //   kitID resets per box (K1, K2... within each box, like original DB)
+  const kitKeyToCode = new Map<string, string>();
+  const kitKeyToId = new Map<string, string>();
+  let globalKitCounter = 1;
+  const boxKitCounters = new Map<string, number>(); // boxKey → per-box kit counter
+
+  for (const row of rows) {
+    const kitKey = `${row.mc_name}||${row.cc_no}||${row.kitname}`;
+    if (!kitKeyToCode.has(kitKey)) {
+      kitKeyToCode.set(kitKey, `KT${String(globalKitCounter).padStart(4, "0")}`);
+      const boxKey = `${row.mc_name}||${row.cc_no}`;
+      const perBox = (boxKitCounters.get(boxKey) ?? 0) + 1;
+      boxKitCounters.set(boxKey, perBox);
+      kitKeyToId.set(kitKey, `K${perBox}`);
+      globalKitCounter++;
+    }
+  }
+
+  // itemID resets per kit (I1, I2... within each kit)
+  const kitItemCounters = new Map<string, number>(); // kitKey → per-kit item counter
 
   // Insert into EnglishMotherCube
   const insertEng = db.prepare(`
@@ -179,34 +213,48 @@ export function importCSVToDb(
   try {
     rows.forEach((row, idx) => {
       const kitKey = `${row.mc_name}||${row.cc_no}||${row.kitname}`;
+      const boxKey = `${row.mc_name}||${row.cc_no}`;
+      const ccNo = row.cc_no ?? "";
+      const frameNum = ccNo.split("/")[0] ?? "1";
+      const fKey = `${row.mc_name}||${frameNum}`;
+
+      const cubeId = cubeNameToId.get(row.mc_name) ?? "C1";
+      const boxId = boxKeyToId.get(boxKey) ?? `B${idx + 1}`;
+      const frameId = frameKeyToId.get(fKey) ?? "F1";
+      const frameName = frameKeyToName.get(fKey) ?? "FRAME-1";
       const kitCode = kitKeyToCode.get(kitKey)!;
       const kitId = kitKeyToId.get(kitKey)!;
-      const itemId = `I${idx + 1}`;
+
+      // itemID resets per kit: I1, I2...
+      const perKitCount = (kitItemCounters.get(kitKey) ?? 0) + 1;
+      kitItemCounters.set(kitKey, perKitCount);
+      const itemId = `I${perKitCount}`;
+
       const rowNum = idx + 1;
 
       const params = [
-        parseInt(row.id, 10) || rowNum,
-        String(rowNum),
-        `C${row.bhishm_id}`,
-        row.mc_name,
-        "",
-        "",
-        row.cc_no,
-        row.cc_name,
-        kitId,
-        row.kitname,
-        "",
-        row.no_of_kit,
-        itemId,
-        row.sku_name,
-        "",
-        row.no_of_item,
-        "A",
-        "",
-        row.exp !== "NA" ? row.exp : "",
-        row.no_of_kit,
-        row.no_of_item,
-        kitCode,
+        rowNum,               // id (sequential PK)
+        row.id || String(rowNum), // sNo = CSV original id
+        cubeId,               // cubeID: C1, C2...
+        row.mc_name,          // cubeName
+        frameId,              // frameID: F1, F2...
+        frameName,            // frameName: FRAME-1...
+        boxId,                // boxID: B1, B2...
+        row.cc_name,          // boxName
+        kitId,                // kitID: K1, K2... (resets per box)
+        row.kitname,          // kitName
+        "",                   // kitPhoto
+        row.no_of_kit,        // kitQty
+        itemId,               // itemID: I1, I2... (resets per kit)
+        row.sku_name,         // itemName
+        "",                   // itemPhoto
+        row.no_of_item,       // itemQty
+        "A",                  // status
+        "",                   // kitExpiryDate
+        row.exp !== "NA" ? row.exp : "", // itemExpiryDate
+        row.no_of_kit,        // kitAvailavleQty
+        row.no_of_item,       // itemAvailableQty
+        kitCode,              // kitCode: KT0001...
         "", "", "", "",
         "", "", "", "", "",
       ];
@@ -239,7 +287,7 @@ export function importCSVToDb(
 
   return {
     rowsImported: rows.length,
-    kitsImported: kitCounter - 1,
+    kitsImported: globalKitCounter - 1,
     errors: [],
   };
 }
