@@ -19,7 +19,6 @@ import { InventoryTable } from "@/components/inventory-table";
 import { ExportNameDialog } from "@/components/export-name-dialog";
 import { AppFooter } from "@/components/app-footer";
 import { ImportCsvButton } from "@/components/import-csv-button";
-import { PhotoMapButton } from "@/components/photo-map-button";
 import { useAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -135,7 +134,6 @@ export default function Dashboard() {
                 <BookMarked className="h-3.5 w-3.5" /> Saved Formations
               </Button>
               <ImportCsvButton />
-              <PhotoMapButton />
               <Button
                 onClick={() => setResetOpen(true)}
                 size="sm" className="gap-1.5 text-xs font-semibold text-white border-0"
