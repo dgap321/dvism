@@ -70,14 +70,14 @@
 :root {
   /* === Vision UI Dark Theme === */
   --background: 225 39% 8%;
-  --foreground: 210 40% 94%;
+  --foreground: 38 40% 88%;
 
   --card: 228 40% 12%;
-  --card-foreground: 210 40% 94%;
+  --card-foreground: 38 40% 88%;
   --card-border: 228 35% 20%;
 
   --popover: 228 40% 12%;
-  --popover-foreground: 210 40% 94%;
+  --popover-foreground: 38 40% 88%;
   --popover-border: 228 35% 20%;
 
   --primary: 221 83% 62%;
@@ -85,11 +85,11 @@
   --primary-border: rgba(74, 122, 242, 0.4);
 
   --secondary: 228 35% 20%;
-  --secondary-foreground: 210 40% 85%;
+  --secondary-foreground: 38 30% 80%;
   --secondary-border: rgba(255,255,255,0.06);
 
   --muted: 228 35% 18%;
-  --muted-foreground: 220 18% 52%;
+  --muted-foreground: 330 90% 65%;
   --muted-border: rgba(255,255,255,0.05);
 
   --accent: 185 80% 54%;
@@ -111,12 +111,12 @@
   --chart-5: 270 80% 65%;
 
   --sidebar: 225 39% 7%;
-  --sidebar-foreground: 210 40% 94%;
+  --sidebar-foreground: 38 40% 88%;
   --sidebar-border: 228 35% 16%;
   --sidebar-primary: 221 83% 62%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 228 35% 18%;
-  --sidebar-accent-foreground: 210 40% 94%;
+  --sidebar-accent-foreground: 38 40% 88%;
   --sidebar-ring: 221 83% 62%;
 
   --app-font-sans: 'Space Grotesk', sans-serif;
@@ -183,7 +183,7 @@
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #4a7af2 0%, #21d4fd 100%);
+  background: linear-gradient(135deg, #e8d5b0 0%, #f5e6cc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
