@@ -10,6 +10,7 @@ import adminRouter from "./admin";
 import formationsRouter from "./formations";
 import resetDbRouter from "./reset-db";
 import importCsvRouter from "./import-csv";
+import photoMapRouter from "./photo-map";
 
 const router: IRouter = Router();
 
@@ -34,5 +35,6 @@ router.use(adminRouter);
 router.use(formationsRouter);
 router.use(resetDbRouter);
 router.use(importCsvRouter);
+router.use(photoMapRouter);
 
 export default router;
