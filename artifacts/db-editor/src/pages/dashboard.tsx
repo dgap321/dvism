@@ -1,7 +1,18 @@
 import { useState } from "react";
-import { Layers, Package, Activity, Shield, LogOut, BookMarked } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { Layers, Package, Activity, Shield, LogOut, BookMarked, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ItemsTable } from "@/components/items-table";
 import { KitsTable } from "@/components/kits-table";
 import { InventoryTable } from "@/components/inventory-table";
@@ -20,6 +31,7 @@ export default function Dashboard() {
     open: false,
     type: "sqlite",
   });
+  const [resetOpen, setResetOpen] = useState(false);
 
   const openExport = (type: "sqlite" | "studio") => setExportDialog({ open: true, type });
 
@@ -42,6 +54,20 @@ export default function Dashboard() {
     window.open(type === "sqlite" ? "/api/export" : "/api/export-studio", "_blank");
     toast({ title: "Formation saved", description: `"${name}" added to Saved Formations.` });
   };
+
+  const resetMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/reset-db", { method: "POST", credentials: "include" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { error?: string }).error ?? "Reset failed");
+      }
+    },
+    onSuccess: () =>
+      toast({ title: "Database reset", description: "bhishma.db has been restored to its original state." }),
+    onError: (err: Error) =>
+      toast({ title: "Reset failed", description: err.message, variant: "destructive" }),
+  });
 
   const handleLogout = async () => { await logout(); navigate("/login"); };
 
@@ -113,6 +139,15 @@ export default function Dashboard() {
             >
               <BookMarked className="h-3.5 w-3.5" />
               Saved Formations
+            </Button>
+            <Button
+              onClick={() => setResetOpen(true)}
+              size="sm"
+              className="gap-1.5 text-xs font-semibold text-white border-0"
+              style={{ background: "#dc2626" }}
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              RESET DB
             </Button>
             {user?.role === "admin" && (
               <Button
@@ -206,6 +241,38 @@ export default function Dashboard() {
         onConfirm={handleExportConfirm}
         onClose={() => setExportDialog((s) => ({ ...s, open: false }))}
       />
+
+      <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
+        <AlertDialogContent
+          style={{ background: "rgba(11,16,50,0.97)", border: "1px solid rgba(255,255,255,0.1)" }}
+        >
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-foreground">
+              <RotateCcw className="h-5 w-5 text-red-500" />
+              Reset the Database?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This will permanently overwrite <strong className="text-foreground">bhishma.db</strong> with its original state.
+              All changes to items, kits, and inventory made since initial setup will be lost. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className="border-border/50 text-muted-foreground hover:text-foreground"
+              style={{ background: "rgba(255,255,255,0.04)" }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="font-semibold text-white border-0"
+              style={{ background: "#dc2626" }}
+              onClick={() => { setResetOpen(false); resetMutation.mutate(); }}
+            >
+              Yes, Reset DB
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
