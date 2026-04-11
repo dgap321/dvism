@@ -1,8 +1,10 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { initUsersTable } from "./lib/auth-db";
+import { initBackup } from "./lib/db-sqlite";
 
 initUsersTable();
+initBackup();
 
 const rawPort = process.env["PORT"];
 

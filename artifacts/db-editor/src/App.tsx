@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import LoginPage from "@/pages/login";
 import AdminPage from "@/pages/admin";
+import SavedFormations from "@/pages/saved-formations";
 import { useEffect } from "react";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,9 @@ function Router() {
     <Switch>
       <Route path="/login" component={LoginPage} />
       <Route path="/admin" component={AdminRoute} />
+      <Route path="/saved-formations">
+        {() => <ProtectedRoute component={SavedFormations} />}
+      </Route>
       <Route path="/">
         {() => <ProtectedRoute component={Dashboard} />}
       </Route>

@@ -7,6 +7,8 @@ import exportRouter from "./export";
 import exportStudioRouter from "./export-studio";
 import authRouter from "./auth";
 import adminRouter from "./admin";
+import formationsRouter from "./formations";
+import resetDbRouter from "./reset-db";
 
 const router: IRouter = Router();
 
@@ -28,5 +30,7 @@ router.use(inventoryRouter);
 router.use(exportRouter);
 router.use(exportStudioRouter);
 router.use(adminRouter);
+router.use(formationsRouter);
+router.use(resetDbRouter);
 
 export default router;

@@ -1,23 +1,52 @@
-import { Download, Layers, Package, Activity, FolderArchive, Shield, LogOut } from "lucide-react";
+import { useState } from "react";
+import { Layers, Package, Activity, Shield, LogOut, BookMarked } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ItemsTable } from "@/components/items-table";
 import { KitsTable } from "@/components/kits-table";
 import { InventoryTable } from "@/components/inventory-table";
+import { ExportNameDialog } from "@/components/export-name-dialog";
 import { useAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+import { Download, FolderArchive } from "lucide-react";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [, navigate] = useLocation();
+  const { toast } = useToast();
 
-  const handleExport = () => window.open("/api/export", "_blank");
-  const handleExportStudio = () => window.open("/api/export-studio", "_blank");
+  const [exportDialog, setExportDialog] = useState<{ open: boolean; type: "sqlite" | "studio" }>({
+    open: false,
+    type: "sqlite",
+  });
+
+  const openExport = (type: "sqlite" | "studio") => setExportDialog({ open: true, type });
+
+  const handleExportConfirm = async (name: string) => {
+    const type = exportDialog.type;
+    const res = await fetch("/api/saved-formations", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, type }),
+    });
+
+    if (!res.ok) {
+      toast({ title: "Failed to save formation", variant: "destructive" });
+      setExportDialog((s) => ({ ...s, open: false }));
+      return;
+    }
+
+    setExportDialog((s) => ({ ...s, open: false }));
+    window.open(type === "sqlite" ? "/api/export" : "/api/export-studio", "_blank");
+    toast({ title: "Formation saved", description: `"${name}" added to Saved Formations.` });
+  };
+
   const handleLogout = async () => { await logout(); navigate("/login"); };
 
   return (
     <div className="min-h-screen aurora-bg">
-      {/* Header */}
       <header
         className="sticky top-0 z-10 border-b"
         style={{
@@ -56,7 +85,7 @@ export default function Dashboard() {
               System Online
             </div>
             <Button
-              onClick={handleExport}
+              onClick={() => openExport("sqlite")}
               variant="outline"
               size="sm"
               className="gap-1.5 text-xs border-border/50 hover:border-primary/50"
@@ -66,7 +95,7 @@ export default function Dashboard() {
               Export SQLite
             </Button>
             <Button
-              onClick={handleExportStudio}
+              onClick={() => openExport("studio")}
               variant="outline"
               size="sm"
               className="gap-1.5 text-xs border-border/50 hover:border-primary/50"
@@ -74,6 +103,16 @@ export default function Dashboard() {
             >
               <FolderArchive className="h-3.5 w-3.5" />
               Export Studio
+            </Button>
+            <Button
+              onClick={() => navigate("/saved-formations")}
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs border-border/50 hover:border-primary/50"
+              style={{ background: "rgba(255,255,255,0.04)" }}
+            >
+              <BookMarked className="h-3.5 w-3.5" />
+              Saved Formations
             </Button>
             {user?.role === "admin" && (
               <Button
@@ -160,6 +199,13 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
       </main>
+
+      <ExportNameDialog
+        open={exportDialog.open}
+        type={exportDialog.type}
+        onConfirm={handleExportConfirm}
+        onClose={() => setExportDialog((s) => ({ ...s, open: false }))}
+      />
     </div>
   );
 }
