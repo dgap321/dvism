@@ -53,7 +53,13 @@ export function ExportNameDialog({ open, type, onConfirm, onClose }: ExportNameD
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
         className="sm:max-w-md"
-        style={{ background: "rgba(11,16,50,0.97)", border: "1px solid rgba(255,255,255,0.1)" }}
+        style={{
+          background: "rgba(255,255,255,0.88)",
+          backdropFilter: "blur(32px) saturate(160%)",
+          WebkitBackdropFilter: "blur(32px) saturate(160%)",
+          border: "1px solid rgba(255,255,255,0.72)",
+          boxShadow: "0 16px 48px rgba(80,60,20,0.14)",
+        }}
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-foreground">
@@ -76,7 +82,7 @@ export function ExportNameDialog({ open, type, onConfirm, onClose }: ExportNameD
             onChange={(e) => { setName(e.target.value); setError(""); }}
             onKeyDown={(e) => e.key === "Enter" && handleConfirm()}
             autoFocus
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+            style={{ background: "rgba(255,255,255,0.70)", border: "1px solid rgba(200,180,140,0.45)" }}
           />
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>

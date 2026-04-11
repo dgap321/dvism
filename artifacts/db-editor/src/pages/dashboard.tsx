@@ -80,14 +80,15 @@ export default function Dashboard() {
               src="/gryfon-logo.png"
               alt="Gryfon Technologies"
               style={{
-                filter: "brightness(0) invert(1)",
+                filter: "brightness(0)",
                 height: "34px",
                 objectFit: "contain",
+                opacity: 0.75,
               }}
             />
             <div
-              className="h-5 w-px opacity-20"
-              style={{ background: "white" }}
+              className="h-5 w-px opacity-30"
+              style={{ background: "rgba(0,0,0,0.6)" }}
             />
             <div>
               <h1 className="font-bold text-sm leading-tight tracking-widest gradient-text">
@@ -106,8 +107,8 @@ export default function Dashboard() {
               onClick={() => openExport("sqlite")}
               variant="outline"
               size="sm"
-              className="gap-1.5 text-xs border-border/50 hover:border-primary/50"
-              style={{ background: "rgba(255,255,255,0.04)" }}
+              className="gap-1.5 text-xs"
+              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
             >
               <Download className="h-3.5 w-3.5" />
               Export SQLite
@@ -116,8 +117,8 @@ export default function Dashboard() {
               onClick={() => openExport("studio")}
               variant="outline"
               size="sm"
-              className="gap-1.5 text-xs border-border/50 hover:border-primary/50"
-              style={{ background: "rgba(255,255,255,0.04)" }}
+              className="gap-1.5 text-xs"
+              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
             >
               <FolderArchive className="h-3.5 w-3.5" />
               Export Studio
@@ -126,8 +127,8 @@ export default function Dashboard() {
               onClick={() => navigate("/saved-formations")}
               variant="outline"
               size="sm"
-              className="gap-1.5 text-xs border-border/50 hover:border-primary/50"
-              style={{ background: "rgba(255,255,255,0.04)" }}
+              className="gap-1.5 text-xs"
+              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
             >
               <BookMarked className="h-3.5 w-3.5" />
               Saved Formations
@@ -146,8 +147,8 @@ export default function Dashboard() {
                 onClick={() => navigate("/admin")}
                 variant="outline"
                 size="sm"
-                className="gap-1.5 text-xs border-border/50 hover:border-primary/50"
-                style={{ background: "rgba(255,255,255,0.04)" }}
+                className="gap-1.5 text-xs"
+                style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
               >
                 <Shield className="h-3.5 w-3.5" />
                 Admin
@@ -169,8 +170,8 @@ export default function Dashboard() {
       <main className="container max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue="items" className="w-full">
           <TabsList
-            className="grid w-[400px] grid-cols-3 mb-8 border border-border/50"
-            style={{ background: "rgba(255,255,255,0.04)" }}
+            className="grid w-[400px] grid-cols-3 mb-8"
+            style={{ background: "rgba(255,255,255,0.45)", border: "1px solid rgba(255,255,255,0.65)" }}
           >
             <TabsTrigger value="items" className="gap-2 data-[state=active]:gradient-brand data-[state=active]:text-white">
               <Layers className="h-4 w-4" />
@@ -187,10 +188,7 @@ export default function Dashboard() {
           </TabsList>
 
           <TabsContent value="items" className="m-0 focus-visible:outline-none">
-            <div
-              className="glass-card p-6 rounded-2xl"
-              style={{ border: "1px solid rgba(255,255,255,0.07)" }}
-            >
+            <div className="glass-card p-6 rounded-2xl">
               <div className="mb-5">
                 <h2 className="text-base font-semibold text-foreground">Items Registry</h2>
                 <p className="text-sm text-muted-foreground">Manage individual medical supplies and cube contents.</p>
@@ -200,10 +198,7 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="kits" className="m-0 focus-visible:outline-none">
-            <div
-              className="glass-card p-6 rounded-2xl"
-              style={{ border: "1px solid rgba(255,255,255,0.07)" }}
-            >
+            <div className="glass-card p-6 rounded-2xl">
               <div className="mb-5">
                 <h2 className="text-base font-semibold text-foreground">Kit Assemblies</h2>
                 <p className="text-sm text-muted-foreground">View and modify grouped item assemblies and their quantities.</p>
@@ -213,10 +208,7 @@ export default function Dashboard() {
           </TabsContent>
 
           <TabsContent value="inventory" className="m-0 focus-visible:outline-none">
-            <div
-              className="glass-card p-6 rounded-2xl"
-              style={{ border: "1px solid rgba(255,255,255,0.07)" }}
-            >
+            <div className="glass-card p-6 rounded-2xl">
               <div className="mb-5">
                 <h2 className="text-base font-semibold text-foreground">General Inventory</h2>
                 <p className="text-sm text-muted-foreground">Track bulk inventory, batches, and expirations.</p>
@@ -236,7 +228,13 @@ export default function Dashboard() {
 
       <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
         <AlertDialogContent
-          style={{ background: "rgba(11,16,50,0.97)", border: "1px solid rgba(255,255,255,0.1)" }}
+          style={{
+            background: "rgba(255,255,255,0.82)",
+            backdropFilter: "blur(32px) saturate(160%)",
+            WebkitBackdropFilter: "blur(32px) saturate(160%)",
+            border: "1px solid rgba(255,255,255,0.70)",
+            boxShadow: "0 16px 48px rgba(80,60,20,0.14)",
+          }}
         >
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-foreground">
@@ -250,8 +248,8 @@ export default function Dashboard() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
-              className="border-border/50 text-muted-foreground hover:text-foreground"
-              style={{ background: "rgba(255,255,255,0.04)" }}
+              className="text-muted-foreground hover:text-foreground"
+              style={{ background: "rgba(255,255,255,0.60)", border: "1px solid rgba(200,180,140,0.4)" }}
             >
               Cancel
             </AlertDialogCancel>

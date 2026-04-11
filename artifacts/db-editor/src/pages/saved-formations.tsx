@@ -34,8 +34,21 @@ function formatDate(iso: string): string {
   });
 }
 
+const lightDialog = {
+  background: "rgba(255,255,255,0.88)",
+  backdropFilter: "blur(32px) saturate(160%)",
+  WebkitBackdropFilter: "blur(32px) saturate(160%)",
+  border: "1px solid rgba(255,255,255,0.72)",
+  boxShadow: "0 16px 48px rgba(80,60,20,0.14)",
+} as React.CSSProperties;
+
+const lightCancelBtn = {
+  background: "rgba(255,255,255,0.60)",
+  border: "1px solid rgba(200,180,140,0.4)",
+} as React.CSSProperties;
+
 export default function SavedFormations() {
-  const { user, logout } = useAuth();
+  const { user: _user, logout } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -95,9 +108,9 @@ export default function SavedFormations() {
             <img
               src="/gryfon-logo.png"
               alt="Gryfon Technologies"
-              style={{ filter: "brightness(0) invert(1)", height: "34px", objectFit: "contain" }}
+              style={{ filter: "brightness(0)", opacity: 0.75, height: "34px", objectFit: "contain" }}
             />
-            <div className="h-5 w-px opacity-20" style={{ background: "white" }} />
+            <div className="h-5 w-px opacity-30" style={{ background: "rgba(0,0,0,0.6)" }} />
             <div>
               <h1 className="font-bold text-sm leading-tight tracking-widest gradient-text">
                 SAVED FORMATIONS
@@ -108,15 +121,15 @@ export default function SavedFormations() {
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mr-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400" style={{ boxShadow: "0 0 6px rgba(52,211,153,0.7)" }} />
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500" style={{ boxShadow: "0 0 6px rgba(52,211,153,0.7)" }} />
               System Online
             </div>
             <Button
               onClick={() => navigate("/")}
               variant="outline"
               size="sm"
-              className="gap-1.5 text-xs border-border/50 hover:border-primary/50"
-              style={{ background: "rgba(255,255,255,0.04)" }}
+              className="gap-1.5 text-xs"
+              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               Back to Editor
@@ -153,10 +166,7 @@ export default function SavedFormations() {
           </Button>
         </div>
 
-        <div
-          className="glass-card rounded-2xl overflow-hidden"
-          style={{ border: "1px solid rgba(255,255,255,0.07)" }}
-        >
+        <div className="glass-card rounded-2xl overflow-hidden">
           {isLoading ? (
             <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
               Loading…
@@ -170,7 +180,7 @@ export default function SavedFormations() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.08)" }}>
                   <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
@@ -181,17 +191,17 @@ export default function SavedFormations() {
                 {formations.map((f) => (
                   <tr
                     key={f.id}
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
-                    className="hover:bg-white/[0.02] transition-colors"
+                    style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}
+                    className="hover:bg-black/[0.025] transition-colors"
                   >
                     <td className="px-5 py-3.5 font-medium text-foreground">{f.name}</td>
                     <td className="px-5 py-3.5">
                       <span
                         className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
                         style={{
-                          background: f.type === "sqlite" ? "rgba(59,130,246,0.15)" : "rgba(139,92,246,0.15)",
-                          color: f.type === "sqlite" ? "#93c5fd" : "#c4b5fd",
-                          border: `1px solid ${f.type === "sqlite" ? "rgba(59,130,246,0.25)" : "rgba(139,92,246,0.25)"}`,
+                          background: f.type === "sqlite" ? "rgba(249,115,22,0.12)" : "rgba(139,92,246,0.12)",
+                          color: f.type === "sqlite" ? "#c05c0a" : "#6d28d9",
+                          border: `1px solid ${f.type === "sqlite" ? "rgba(249,115,22,0.25)" : "rgba(139,92,246,0.25)"}`,
                         }}
                       >
                         {f.type === "sqlite" ? (
@@ -208,8 +218,8 @@ export default function SavedFormations() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1.5 text-xs h-7 border-border/50 hover:border-primary/50"
-                          style={{ background: "rgba(255,255,255,0.04)" }}
+                          className="gap-1.5 text-xs h-7"
+                          style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
                           onClick={() => {
                             window.open(f.type === "sqlite" ? "/api/export" : "/api/export-studio", "_blank");
                           }}
@@ -236,9 +246,7 @@ export default function SavedFormations() {
       </main>
 
       <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
-        <AlertDialogContent
-          style={{ background: "rgba(11,16,50,0.97)", border: "1px solid rgba(255,255,255,0.1)" }}
-        >
+        <AlertDialogContent style={lightDialog}>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-foreground">
               <RotateCcw className="h-5 w-5 text-red-500" />
@@ -250,10 +258,7 @@ export default function SavedFormations() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel
-              className="border-border/50 text-muted-foreground hover:text-foreground"
-              style={{ background: "rgba(255,255,255,0.04)" }}
-            >
+            <AlertDialogCancel className="text-muted-foreground hover:text-foreground" style={lightCancelBtn}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
@@ -268,9 +273,7 @@ export default function SavedFormations() {
       </AlertDialog>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <AlertDialogContent
-          style={{ background: "rgba(11,16,50,0.97)", border: "1px solid rgba(255,255,255,0.1)" }}
-        >
+        <AlertDialogContent style={lightDialog}>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-foreground">Delete Formation?</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
@@ -278,10 +281,7 @@ export default function SavedFormations() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel
-              className="border-border/50 text-muted-foreground hover:text-foreground"
-              style={{ background: "rgba(255,255,255,0.04)" }}
-            >
+            <AlertDialogCancel className="text-muted-foreground hover:text-foreground" style={lightCancelBtn}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

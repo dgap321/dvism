@@ -68,44 +68,41 @@ export default function LoginPage() {
   const canSubmit = !isDisabled && username.trim() && password;
 
   return (
-    <div className="aurora-bg stripe-pattern min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Decorative orbs */}
+    <div className="aurora-bg min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Soft orbs */}
       <div
         className="pointer-events-none absolute"
         style={{
-          top: "-10%", left: "-5%",
-          width: "40vw", height: "40vw",
-          background: "radial-gradient(circle, rgba(74,122,242,0.15) 0%, transparent 70%)",
+          top: "-8%", left: "-4%",
+          width: "42vw", height: "42vw",
+          background: "radial-gradient(circle, rgba(140,180,100,0.22) 0%, transparent 70%)",
         }}
       />
       <div
         className="pointer-events-none absolute"
         style={{
-          bottom: "-15%", right: "-5%",
-          width: "35vw", height: "35vw",
-          background: "radial-gradient(circle, rgba(28,208,200,0.12) 0%, transparent 70%)",
+          bottom: "-12%", right: "-4%",
+          width: "36vw", height: "36vw",
+          background: "radial-gradient(circle, rgba(220,160,80,0.18) 0%, transparent 70%)",
         }}
       />
 
       <div className="relative w-full max-w-sm">
-        {/* Outer glow ring */}
+        {/* Glow ring */}
         <div
           className="absolute inset-0 rounded-3xl"
           style={{
-            background: "linear-gradient(135deg, rgba(74,122,242,0.25), rgba(28,208,200,0.15))",
-            filter: "blur(1px)",
-            transform: "scale(1.01)",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,230,180,0.4))",
+            filter: "blur(2px)",
+            transform: "scale(1.015)",
           }}
         />
 
         {/* Card */}
         <div className="relative glass-card rounded-3xl overflow-hidden">
           {/* Brand header */}
-          <div
-            className="gradient-brand px-8 py-9 text-center relative overflow-hidden"
-          >
-            {/* Shine lines */}
-            <div className="absolute inset-0 stripe-pattern opacity-20" />
+          <div className="gradient-brand px-8 py-9 text-center relative overflow-hidden">
+            <div className="absolute inset-0 stripe-pattern opacity-15" />
             <div className="relative z-10">
               <img
                 src="/gryfon-logo.png"
@@ -119,7 +116,7 @@ export default function LoginPage() {
                 }}
               />
               <h1 className="text-lg font-bold text-white tracking-widest mb-0.5">DB BHISHM TABLET</h1>
-              <p className="text-white/55 text-xs tracking-wide">Supply Editor · Secure Access</p>
+              <p className="text-white/60 text-xs tracking-wide">Supply Editor · Secure Access</p>
             </div>
           </div>
 
@@ -143,19 +140,19 @@ export default function LoginPage() {
                   disabled={isDisabled}
                   autoComplete="username"
                   data-testid="input-username"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all disabled:opacity-40"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all disabled:opacity-40"
                   style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+                    background: "rgba(255,255,255,0.65)",
+                    border: "1px solid rgba(200,180,140,0.45)",
+                    boxShadow: "inset 0 1px 2px rgba(0,0,0,0.04)",
                   }}
                   onFocus={(e) => {
-                    e.target.style.border = "1px solid rgba(74,122,242,0.6)";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(74,122,242,0.12), inset 0 1px 0 rgba(255,255,255,0.04)";
+                    e.target.style.border = "1px solid rgba(249,115,22,0.55)";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(249,115,22,0.12), inset 0 1px 2px rgba(0,0,0,0.04)";
                   }}
                   onBlur={(e) => {
-                    e.target.style.border = "1px solid rgba(255,255,255,0.1)";
-                    e.target.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.04)";
+                    e.target.style.border = "1px solid rgba(200,180,140,0.45)";
+                    e.target.style.boxShadow = "inset 0 1px 2px rgba(0,0,0,0.04)";
                   }}
                 />
               </div>
@@ -180,19 +177,19 @@ export default function LoginPage() {
                   disabled={isDisabled}
                   autoComplete="current-password"
                   data-testid="input-password"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-all disabled:opacity-40"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all disabled:opacity-40"
                   style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+                    background: "rgba(255,255,255,0.65)",
+                    border: "1px solid rgba(200,180,140,0.45)",
+                    boxShadow: "inset 0 1px 2px rgba(0,0,0,0.04)",
                   }}
                   onFocus={(e) => {
-                    e.target.style.border = "1px solid rgba(74,122,242,0.6)";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(74,122,242,0.12), inset 0 1px 0 rgba(255,255,255,0.04)";
+                    e.target.style.border = "1px solid rgba(249,115,22,0.55)";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(249,115,22,0.12), inset 0 1px 2px rgba(0,0,0,0.04)";
                   }}
                   onBlur={(e) => {
-                    e.target.style.border = "1px solid rgba(255,255,255,0.1)";
-                    e.target.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.04)";
+                    e.target.style.border = "1px solid rgba(200,180,140,0.45)";
+                    e.target.style.boxShadow = "inset 0 1px 2px rgba(0,0,0,0.04)";
                   }}
                 />
                 <button
@@ -210,9 +207,9 @@ export default function LoginPage() {
               <div
                 className="rounded-xl px-4 py-3 text-sm"
                 style={{
-                  background: "rgba(220, 60, 60, 0.12)",
+                  background: "rgba(220, 60, 60, 0.10)",
                   border: "1px solid rgba(220, 60, 60, 0.25)",
-                  color: "#ff6b6b",
+                  color: "#c0392b",
                 }}
               >
                 {error}
