@@ -73,15 +73,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen aurora-bg">
-      <header
-        className="sticky top-0 z-10 border-b"
-        style={{
-          background: "rgba(11, 16, 50, 0.75)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderColor: "rgba(255,255,255,0.07)",
-        }}
-      >
+      <header className="sticky top-0 z-10 ios-header">
         <div className="container max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
