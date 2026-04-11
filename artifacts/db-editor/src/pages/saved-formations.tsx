@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Download, FolderArchive, Trash2, RotateCcw, DatabaseZap } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { AppFooter } from "@/components/app-footer";
 
 interface Formation {
   id: string;
@@ -101,9 +102,10 @@ export default function SavedFormations() {
   const handleLogout = async () => { await logout(); navigate("/login"); };
 
   return (
-    <div className="min-h-screen aurora-bg">
-      <header className="sticky top-0 z-10 ios-header">
-        <div className="container max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div className="min-h-screen aurora-bg flex flex-col">
+      <div className="sticky top-0 z-10 px-4 pt-3">
+        <div className="ios-header rounded-2xl">
+        <div className="container max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
               src="/gryfon-logo.png"
@@ -144,9 +146,10 @@ export default function SavedFormations() {
             </Button>
           </div>
         </div>
-      </header>
+        </div>
+      </div>
 
-      <main className="container max-w-7xl mx-auto px-4 py-8">
+      <main className="flex-1 container max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Export History</h2>
@@ -244,6 +247,8 @@ export default function SavedFormations() {
           )}
         </div>
       </main>
+
+      <AppFooter />
 
       <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
         <AlertDialogContent style={lightDialog}>

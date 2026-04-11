@@ -455,12 +455,15 @@ function KitItemsPanel({
 
 // ---------------------------------------------------------------------------
 // Main component
+const PAGE_SIZE = 20;
+
 // ---------------------------------------------------------------------------
 export function KitsTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [boxNameSearch, setBoxNameSearch] = useState("");
   const [cubeFilter, setCubeFilter] = useState<"" | "CUBE-1" | "CUBE-2">("");
   const [boxIdFilter, setBoxIdFilter] = useState("");
+  const [page, setPage] = useState(1);
   const [expandedKitId, setExpandedKitId] = useState<string | null>(null);
   const [editingKit, setEditingKit] = useState<Kit | null>(null);
   const [deletingKit, setDeletingKit] = useState<Kit | null>(null);
@@ -501,6 +504,8 @@ export function KitsTable() {
     [kits, cubeFilter]
   );
 
+  useEffect(() => { setPage(1); }, [searchQuery, boxNameSearch, cubeFilter, boxIdFilter]);
+
   const filteredKits = kits.filter((kit) => {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -517,6 +522,10 @@ export function KitsTable() {
     if (boxIdFilter && kit.boxID !== boxIdFilter) return false;
     return true;
   });
+  const totalPages = Math.max(1, Math.ceil(filteredKits.length / PAGE_SIZE));
+  const paginatedKits = filteredKits.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const startIdx = filteredKits.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const endIdx = Math.min(page * PAGE_SIZE, filteredKits.length);
 
   // Kit edit handlers
   const handleEditKitClick = (kit: Kit) => {
@@ -688,7 +697,7 @@ export function KitsTable() {
           </button>
         )}
         <div className="ml-auto text-sm text-muted-foreground font-medium whitespace-nowrap">
-          {isLoading ? "Loading..." : `${filteredKits.length} kits found`}
+          {isLoading ? "Loading..." : filteredKits.length === 0 ? "No kits found" : `${startIdx}–${endIdx} of ${filteredKits.length}`}
         </div>
       </div>
 
@@ -723,7 +732,7 @@ export function KitsTable() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredKits.map((kit) => {
+              paginatedKits.map((kit) => {
                 const key = compositeKey(kit);
                 const isExpanded = expandedKitId === key;
                 return (
@@ -800,6 +809,34 @@ export function KitsTable() {
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline" size="sm" className="h-7 px-3 text-xs"
+              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+            >← Prev</Button>
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              const pg = totalPages <= 7 ? i + 1 : page <= 4 ? i + 1 : page >= totalPages - 3 ? totalPages - 6 + i : page - 3 + i;
+              return (
+                <Button key={pg} variant={pg === page ? "default" : "outline"} size="sm" className="h-7 w-7 p-0 text-xs"
+                  style={pg !== page ? { background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" } : {}}
+                  onClick={() => setPage(pg)}>{pg}</Button>
+              );
+            })}
+            <Button
+              variant="outline" size="sm" className="h-7 px-3 text-xs"
+              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
+              disabled={page >= totalPages}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            >Next →</Button>
+          </div>
+        </div>
+      )}
 
       {/* ── Add Item Dialog ── */}
       <Dialog open={!!addingToKit} onOpenChange={(o) => !o && setAddingToKit(null)}>

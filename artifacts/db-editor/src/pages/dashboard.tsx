@@ -17,15 +17,19 @@ import { ItemsTable } from "@/components/items-table";
 import { KitsTable } from "@/components/kits-table";
 import { InventoryTable } from "@/components/inventory-table";
 import { ExportNameDialog } from "@/components/export-name-dialog";
+import { AppFooter } from "@/components/app-footer";
 import { useAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { Download, FolderArchive } from "lucide-react";
 
+const GOLD = "#c88a18";
+
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("items");
 
   const [exportDialog, setExportDialog] = useState<{ open: boolean; type: "sqlite" | "studio" }>({
     open: false,
@@ -71,120 +75,117 @@ export default function Dashboard() {
 
   const handleLogout = async () => { await logout(); navigate("/login"); };
 
-  return (
-    <div className="min-h-screen aurora-bg">
-      <header className="sticky top-0 z-10 ios-header">
-        <div className="container max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src="/gryfon-logo.png"
-              alt="Gryfon Technologies"
-              style={{
-                filter: "brightness(0)",
-                height: "34px",
-                objectFit: "contain",
-                opacity: 0.75,
-              }}
-            />
-            <div
-              className="h-5 w-px opacity-30"
-              style={{ background: "rgba(0,0,0,0.6)" }}
-            />
-            <div>
-              <h1 className="font-bold text-sm leading-tight tracking-widest gradient-text">
-                DB BHISHM TABLET
-              </h1>
-              <p className="text-[10px] text-muted-foreground leading-none tracking-wide">Supply Editor</p>
-            </div>
-          </div>
+  const tabs = [
+    { value: "items",     label: "Items",     Icon: Layers },
+    { value: "kits",      label: "Kits",      Icon: Package },
+    { value: "inventory", label: "Inventory", Icon: Activity },
+  ];
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mr-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400" style={{ boxShadow: "0 0 6px rgba(52,211,153,0.7)" }} />
-              System Online
+  const lightDialog = {
+    background: "rgba(255,255,255,0.82)",
+    backdropFilter: "blur(32px) saturate(160%)",
+    WebkitBackdropFilter: "blur(32px) saturate(160%)",
+    border: "1px solid rgba(255,255,255,0.70)",
+    boxShadow: "0 16px 48px rgba(80,60,20,0.14)",
+  } as React.CSSProperties;
+
+  return (
+    <div className="min-h-screen aurora-bg flex flex-col">
+      {/* Rounded floating header */}
+      <div className="sticky top-0 z-10 px-4 pt-3">
+        <div className="ios-header rounded-2xl">
+          <div className="container max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img
+                src="/gryfon-logo.png"
+                alt="Gryfon Technologies"
+                style={{ filter: "brightness(0)", height: "32px", objectFit: "contain", opacity: 0.75 }}
+              />
+              <div className="h-5 w-px opacity-25" style={{ background: "rgba(0,0,0,0.6)" }} />
+              <div>
+                <h1 className="font-bold text-sm leading-tight tracking-widest gradient-text">
+                  DB BHISHM TABLET
+                </h1>
+                <p className="text-[10px] text-muted-foreground leading-none tracking-wide">Supply Editor</p>
+              </div>
             </div>
-            <Button
-              onClick={() => openExport("sqlite")}
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs"
-              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
-            >
-              <Download className="h-3.5 w-3.5" />
-              Export SQLite
-            </Button>
-            <Button
-              onClick={() => openExport("studio")}
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs"
-              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
-            >
-              <FolderArchive className="h-3.5 w-3.5" />
-              Export Studio
-            </Button>
-            <Button
-              onClick={() => navigate("/saved-formations")}
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs"
-              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
-            >
-              <BookMarked className="h-3.5 w-3.5" />
-              Saved Formations
-            </Button>
-            <Button
-              onClick={() => setResetOpen(true)}
-              size="sm"
-              className="gap-1.5 text-xs font-semibold text-white border-0"
-              style={{ background: "#dc2626" }}
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              RESET DB
-            </Button>
-            {user?.role === "admin" && (
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mr-1">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-500" style={{ boxShadow: "0 0 6px rgba(52,211,153,0.7)" }} />
+                Online
+              </div>
               <Button
-                onClick={() => navigate("/admin")}
-                variant="outline"
-                size="sm"
-                className="gap-1.5 text-xs"
+                onClick={() => openExport("sqlite")}
+                variant="outline" size="sm" className="gap-1.5 text-xs"
                 style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
               >
-                <Shield className="h-3.5 w-3.5" />
-                Admin
+                <Download className="h-3.5 w-3.5" /> Export SQLite
               </Button>
-            )}
-            <Button
-              onClick={handleLogout}
-              variant="ghost"
-              size="icon"
-              title="Sign out"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
+              <Button
+                onClick={() => openExport("studio")}
+                variant="outline" size="sm" className="gap-1.5 text-xs"
+                style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
+              >
+                <FolderArchive className="h-3.5 w-3.5" /> Export Studio
+              </Button>
+              <Button
+                onClick={() => navigate("/saved-formations")}
+                variant="outline" size="sm" className="gap-1.5 text-xs"
+                style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
+              >
+                <BookMarked className="h-3.5 w-3.5" /> Saved Formations
+              </Button>
+              <Button
+                onClick={() => setResetOpen(true)}
+                size="sm" className="gap-1.5 text-xs font-semibold text-white border-0"
+                style={{ background: "#dc2626" }}
+              >
+                <RotateCcw className="h-3.5 w-3.5" /> RESET DB
+              </Button>
+              {user?.role === "admin" && (
+                <Button
+                  onClick={() => navigate("/admin")}
+                  variant="outline" size="sm" className="gap-1.5 text-xs"
+                  style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
+                >
+                  <Shield className="h-3.5 w-3.5" /> Admin
+                </Button>
+              )}
+              <Button
+                onClick={handleLogout}
+                variant="ghost" size="icon" title="Sign out"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="container max-w-7xl mx-auto px-4 py-8">
-        <Tabs defaultValue="items" className="w-full">
+      <main className="flex-1 container max-w-7xl mx-auto px-4 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList
             className="grid w-[400px] grid-cols-3 mb-8"
             style={{ background: "rgba(255,255,255,0.45)", border: "1px solid rgba(255,255,255,0.65)" }}
           >
-            <TabsTrigger value="items" className="gap-2 data-[state=active]:gradient-brand data-[state=active]:text-white">
-              <Layers className="h-4 w-4" />
-              Items
-            </TabsTrigger>
-            <TabsTrigger value="kits" className="gap-2 data-[state=active]:gradient-brand data-[state=active]:text-white">
-              <Package className="h-4 w-4" />
-              Kits
-            </TabsTrigger>
-            <TabsTrigger value="inventory" className="gap-2 data-[state=active]:gradient-brand data-[state=active]:text-white">
-              <Activity className="h-4 w-4" />
-              Inventory
-            </TabsTrigger>
+            {tabs.map(({ value, label, Icon }) => {
+              const isActive = activeTab === value;
+              return (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="gap-2 data-[state=active]:bg-white/70 data-[state=active]:shadow-sm"
+                >
+                  <Icon
+                    className="h-4 w-4 shrink-0"
+                    style={isActive ? { color: GOLD } : {}}
+                  />
+                  <span className={isActive ? "golden-text font-semibold" : ""}>{label}</span>
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
 
           <TabsContent value="items" className="m-0 focus-visible:outline-none">
@@ -219,6 +220,8 @@ export default function Dashboard() {
         </Tabs>
       </main>
 
+      <AppFooter />
+
       <ExportNameDialog
         open={exportDialog.open}
         type={exportDialog.type}
@@ -227,15 +230,7 @@ export default function Dashboard() {
       />
 
       <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
-        <AlertDialogContent
-          style={{
-            background: "rgba(255,255,255,0.82)",
-            backdropFilter: "blur(32px) saturate(160%)",
-            WebkitBackdropFilter: "blur(32px) saturate(160%)",
-            border: "1px solid rgba(255,255,255,0.70)",
-            boxShadow: "0 16px 48px rgba(80,60,20,0.14)",
-          }}
-        >
+        <AlertDialogContent style={lightDialog}>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-foreground">
               <RotateCcw className="h-5 w-5 text-red-500" />
@@ -243,7 +238,7 @@ export default function Dashboard() {
             </AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
               This will permanently overwrite <strong className="text-foreground">bhishma.db</strong> with its original state.
-              All changes to items, kits, and inventory made since initial setup will be lost. This action cannot be undone.
+              All changes since initial setup will be lost. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

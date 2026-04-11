@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Search, Edit, Trash2, AlertCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { Item } from "@workspace/api-client-react";
@@ -40,12 +40,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 
+const PAGE_SIZE = 20;
+
 export function ItemsTable() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [deletingItem, setDeletingItem] = useState<Item | null>(null);
   const [editForm, setEditForm] = useState({ itemName: "", itemQty: "" });
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
+  useEffect(() => { setPage(1); }, [searchQuery]);
 
   const toggleExpand = (id: number) => {
     setExpandedRows(prev => {
@@ -70,6 +75,10 @@ export function ItemsTable() {
     item.kitName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.cubeName?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
+  const paginatedItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const startIdx = filteredItems.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const endIdx = Math.min(page * PAGE_SIZE, filteredItems.length);
 
   const handleEditClick = (item: Item) => {
     setEditingItem(item);
@@ -148,7 +157,7 @@ export function ItemsTable() {
           />
         </div>
         <div className="text-sm text-muted-foreground font-medium">
-          {isLoading ? "Loading..." : `${filteredItems.length} items found`}
+          {isLoading ? "Loading..." : filteredItems.length === 0 ? "No items found" : `${startIdx}–${endIdx} of ${filteredItems.length}`}
         </div>
       </div>
 
@@ -189,7 +198,7 @@ export function ItemsTable() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredItems.map((item) => {
+              paginatedItems.map((item) => {
                 const isExpanded = expandedRows.has(item.id);
                 return (
                   <Fragment key={item.id}>
@@ -360,6 +369,50 @@ export function ItemsTable() {
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs text-muted-foreground">
+            Page {page} of {totalPages}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline" size="sm" className="h-7 px-3 text-xs"
+              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
+              disabled={page <= 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+            >
+              ← Prev
+            </Button>
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              const pg = totalPages <= 7 ? i + 1
+                : page <= 4 ? i + 1
+                : page >= totalPages - 3 ? totalPages - 6 + i
+                : page - 3 + i;
+              return (
+                <Button
+                  key={pg}
+                  variant={pg === page ? "default" : "outline"}
+                  size="sm"
+                  className="h-7 w-7 p-0 text-xs"
+                  style={pg !== page ? { background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" } : {}}
+                  onClick={() => setPage(pg)}
+                >
+                  {pg}
+                </Button>
+              );
+            })}
+            <Button
+              variant="outline" size="sm" className="h-7 px-3 text-xs"
+              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
+              disabled={page >= totalPages}
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            >
+              Next →
+            </Button>
+          </div>
+        </div>
+      )}
 
       <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
         <DialogContent className="sm:max-w-[425px]">

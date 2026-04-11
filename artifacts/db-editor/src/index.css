@@ -180,10 +180,27 @@
   background: rgba(255, 255, 255, 0.32);
   backdrop-filter: blur(48px) saturate(180%);
   -webkit-backdrop-filter: blur(48px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.55);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6),
-    0 4px 20px rgba(80, 60, 20, 0.06);
+    0 2px 16px rgba(80, 60, 20, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.70);
+}
+
+.ios-footer {
+  background: rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(40px) saturate(160%);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.50);
+  box-shadow:
+    0 -2px 12px rgba(80, 60, 20, 0.06),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.60);
+}
+
+.golden-text {
+  background: linear-gradient(135deg, #8b6010 0%, #d4a018 38%, #f0c840 65%, #c88a20 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .glow-orange {
