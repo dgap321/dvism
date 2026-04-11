@@ -168,7 +168,7 @@ export default function Dashboard() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList
             className="grid w-[400px] grid-cols-3 mb-8"
-            style={{ background: "rgba(255,255,255,0.45)", border: "1px solid rgba(255,255,255,0.65)" }}
+            style={{ background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.35)" }}
           >
             {tabs.map(({ value, label, Icon }) => {
               const isActive = activeTab === value;
@@ -176,7 +176,7 @@ export default function Dashboard() {
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className="gap-2 data-[state=active]:bg-white/70 data-[state=active]:shadow-sm"
+                  className="gap-2 data-[state=active]:bg-white/25 data-[state=active]:shadow-sm"
                 >
                   <Icon
                     className="h-4 w-4 shrink-0"
