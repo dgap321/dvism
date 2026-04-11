@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { listUsers, createUser, deleteUser, updateUserPassword } from "../lib/auth-db";
+import { listUsers, createUser, deleteUser, updateUserPassword, updateUserProfile } from "../lib/auth-db";
 
 const router: IRouter = Router();
 
@@ -38,6 +38,33 @@ router.post("/admin/users", (req, res): void => {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes("UNIQUE")) {
       res.status(409).json({ error: "conflict", message: "Username already exists." });
+    } else {
+      res.status(500).json({ error: "server_error", message: msg });
+    }
+  }
+});
+
+router.patch("/admin/users/:id", (req, res): void => {
+  const id = parseInt(req.params.id, 10);
+  const { username, role } = req.body as { username?: string; role?: string };
+
+  if (!username?.trim()) {
+    res.status(400).json({ error: "bad_request", message: "Username is required." });
+    return;
+  }
+
+  if (username.trim().toLowerCase() === "pritam9160" && id !== req.session.userId) {
+    res.status(403).json({ error: "forbidden", message: "Cannot modify the super admin account." });
+    return;
+  }
+
+  try {
+    updateUserProfile(id, username.trim(), role === "admin" ? "admin" : "user");
+    res.json({ ok: true });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("UNIQUE")) {
+      res.status(409).json({ error: "conflict", message: "Username already taken." });
     } else {
       res.status(500).json({ error: "server_error", message: msg });
     }

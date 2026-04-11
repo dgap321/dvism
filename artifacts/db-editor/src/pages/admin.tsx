@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
-  Shield, Plus, Trash2, Key, ArrowLeft, UserCircle, RefreshCw, Eye, EyeOff
+  Shield, Plus, Trash2, Key, ArrowLeft, UserCircle, RefreshCw,
+  Eye, EyeOff, Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,8 @@ interface UserRow {
   created_at: string;
 }
 
+const SUPER_ADMIN = "pritam9160";
+
 export default function AdminPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
@@ -37,6 +40,10 @@ export default function AdminPage() {
   const [addForm, setAddForm] = useState({ username: "", password: "", role: "user" });
   const [addShowPw, setAddShowPw] = useState(false);
   const [addSubmitting, setAddSubmitting] = useState(false);
+
+  const [editUser, setEditUser] = useState<UserRow | null>(null);
+  const [editForm, setEditForm] = useState({ username: "", role: "user" });
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   const [changePwUser, setChangePwUser] = useState<UserRow | null>(null);
   const [newPassword, setNewPassword] = useState("");
@@ -85,6 +92,34 @@ export default function AdminPage() {
     }
   };
 
+  const openEdit = (u: UserRow) => {
+    setEditUser(u);
+    setEditForm({ username: u.username, role: u.role });
+  };
+
+  const handleEditUser = async () => {
+    if (!editUser || !editForm.username.trim()) return;
+    setEditSubmitting(true);
+    try {
+      const res = await fetch(`/api/admin/users/${editUser.id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast({ title: `User "${editForm.username}" updated.` });
+        setEditUser(null);
+        fetchUsers();
+      } else {
+        toast({ variant: "destructive", title: data.message ?? "Failed to update user." });
+      }
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
   const handleChangePassword = async () => {
     if (!changePwUser || !newPassword.trim()) return;
     setPwSubmitting(true);
@@ -125,9 +160,10 @@ export default function AdminPage() {
 
   if (isLoading) return null;
 
+  const isSuperAdmin = (u: UserRow) => u.username.toLowerCase() === SUPER_ADMIN.toLowerCase();
+
   return (
     <div className="min-h-screen aurora-bg">
-      {/* Header */}
       <header
         className="sticky top-0 z-10 border-b"
         style={{
@@ -157,7 +193,7 @@ export default function AdminPage() {
             </div>
           </div>
           <Button
-            onClick={() => { setAddForm({ username: "", password: "", role: "user" }); setAddOpen(true); }}
+            onClick={() => { setAddForm({ username: "", password: "", role: "user" }); setAddShowPw(false); setAddOpen(true); }}
             size="sm"
             className="gap-2 gradient-button rounded-xl text-xs font-semibold"
           >
@@ -183,19 +219,38 @@ export default function AdminPage() {
               <RefreshCw className={`h-4 w-4 ${fetching ? "animate-spin" : ""}`} />
             </button>
           </div>
+
           <div className="divide-y divide-border/30">
             {users.map((u) => (
-              <div key={u.id} className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors">
+              <div
+                key={u.id}
+                className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <div
                     className="flex items-center justify-center h-9 w-9 rounded-full"
-                    style={{ background: "rgba(74,122,242,0.15)", border: "1px solid rgba(74,122,242,0.25)" }}
+                    style={{
+                      background: isSuperAdmin(u)
+                        ? "rgba(200,138,24,0.15)"
+                        : "rgba(74,122,242,0.15)",
+                      border: isSuperAdmin(u)
+                        ? "1px solid rgba(200,138,24,0.35)"
+                        : "1px solid rgba(74,122,242,0.25)",
+                    }}
                   >
-                    <UserCircle className="h-6 w-6 text-primary/70" />
+                    <UserCircle
+                      className="h-6 w-6"
+                      style={{ color: isSuperAdmin(u) ? "#c88a18" : undefined }}
+                    />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-foreground text-sm">{u.username}</span>
+                      {isSuperAdmin(u) && (
+                        <Badge className="text-[10px] px-1.5 py-0 bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                          super admin
+                        </Badge>
+                      )}
                       <Badge
                         variant={u.role === "admin" ? "default" : "outline"}
                         className="text-[10px] px-1.5 py-0"
@@ -204,25 +259,36 @@ export default function AdminPage() {
                       </Badge>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Created {new Date(u.created_at).toLocaleDateString()}
+                      ID #{u.id} · Created {new Date(u.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => openEdit(u)}
+                    disabled={isSuperAdmin(u) && u.id !== user?.id}
+                    className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    <Pencil className="h-3.5 w-3.5" /> Edit
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => { setChangePwUser(u); setNewPassword(""); setShowNewPw(false); }}
                     className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                   >
-                    <Key className="h-3.5 w-3.5" /> Change Password
+                    <Key className="h-3.5 w-3.5" /> Password
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setDeleteUser(u)}
-                    disabled={u.id === user?.id}
+                    disabled={u.id === user?.id || isSuperAdmin(u)}
                     className="text-destructive/50 hover:text-destructive hover:bg-destructive/10"
+                    title={isSuperAdmin(u) ? "Cannot delete super admin" : "Delete user"}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -236,6 +302,7 @@ export default function AdminPage() {
         </div>
       </main>
 
+      {/* Add User Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Add New User</DialogTitle></DialogHeader>
@@ -288,6 +355,51 @@ export default function AdminPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit User Dialog */}
+      <Dialog open={!!editUser} onOpenChange={(o) => { if (!o) setEditUser(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User — {editUser?.username}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Username</Label>
+              <Input
+                placeholder="username"
+                value={editForm.username}
+                onChange={(e) => setEditForm((f) => ({ ...f, username: e.target.value }))}
+                disabled={editUser ? isSuperAdmin(editUser) : false}
+              />
+              {editUser && isSuperAdmin(editUser) && (
+                <p className="text-xs text-muted-foreground">Super admin username cannot be changed.</p>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <Label>Role</Label>
+              <select
+                value={editForm.role}
+                onChange={(e) => setEditForm((f) => ({ ...f, role: e.target.value }))}
+                disabled={editUser ? isSuperAdmin(editUser) : false}
+                className="w-full h-9 rounded-md border border-border bg-input px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditUser(null)}>Cancel</Button>
+            <Button
+              onClick={handleEditUser}
+              disabled={editSubmitting || !editForm.username.trim() || (editUser ? isSuperAdmin(editUser) : false)}
+            >
+              {editSubmitting ? "Saving…" : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Password Dialog */}
       <Dialog open={!!changePwUser} onOpenChange={(o) => { if (!o) setChangePwUser(null); }}>
         <DialogContent>
           <DialogHeader>
@@ -318,6 +430,7 @@ export default function AdminPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation */}
       <AlertDialog open={!!deleteUser} onOpenChange={(o) => { if (!o) setDeleteUser(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>

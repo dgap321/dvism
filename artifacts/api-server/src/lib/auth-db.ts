@@ -90,3 +90,8 @@ export function updateUserPassword(id: number, newPassword: string): void {
   const hash = bcrypt.hashSync(newPassword, 10);
   db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, id);
 }
+
+export function updateUserProfile(id: number, username: string, role: string): void {
+  const db = getDb();
+  db.prepare("UPDATE users SET username = ?, role = ? WHERE id = ?").run(username, role, id);
+}
