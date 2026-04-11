@@ -92,10 +92,12 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen aurora-bg flex flex-col">
-      {/* Rounded floating header */}
+      {/* Rounded floating header — two-row layout */}
       <div className="sticky top-0 z-10 px-4 pt-3">
         <div className="ios-header rounded-2xl">
-          <div className="container max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+          <div className="container max-w-7xl mx-auto px-5 py-3 flex flex-col gap-2">
+
+            {/* Row 1: logo + title */}
             <div className="flex items-center gap-3">
               <img
                 src="/gryfon-logo.png"
@@ -111,7 +113,8 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Row 2: action buttons */}
+            <div className="flex items-center flex-wrap gap-2 pb-1">
               <Button
                 onClick={() => openExport("sqlite")}
                 variant="outline" size="sm" className="gap-1.5 text-xs"
@@ -158,6 +161,7 @@ export default function Dashboard() {
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
+
           </div>
         </div>
       </div>
