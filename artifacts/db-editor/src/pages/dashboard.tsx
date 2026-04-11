@@ -1,4 +1,4 @@
-import { Download, Database, Layers, Package, Activity, FolderArchive, Shield, LogOut } from "lucide-react";
+import { Download, Layers, Package, Activity, FolderArchive, Shield, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ItemsTable } from "@/components/items-table";
@@ -29,17 +29,24 @@ export default function Dashboard() {
       >
         <div className="container max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <img
+              src="/gryfon-logo.png"
+              alt="Gryfon Technologies"
+              style={{
+                filter: "brightness(0) invert(1)",
+                height: "34px",
+                objectFit: "contain",
+              }}
+            />
             <div
-              className="p-2 rounded-xl"
-              style={{ background: "linear-gradient(135deg, #3d72f0, #1ccfc8)" }}
-            >
-              <Database className="h-5 w-5 text-white" />
-            </div>
+              className="h-5 w-px opacity-20"
+              style={{ background: "white" }}
+            />
             <div>
-              <h1 className="font-bold text-base leading-tight tracking-wide gradient-text">
+              <h1 className="font-bold text-sm leading-tight tracking-widest gradient-text">
                 DB BHISHM TABLET
               </h1>
-              <p className="text-[11px] text-muted-foreground leading-none">Supply Editor</p>
+              <p className="text-[10px] text-muted-foreground leading-none tracking-wide">Supply Editor</p>
             </div>
           </div>
 

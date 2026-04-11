@@ -107,18 +107,19 @@ export default function LoginPage() {
             {/* Shine lines */}
             <div className="absolute inset-0 stripe-pattern opacity-20" />
             <div className="relative z-10">
-              <div
-                className="inline-flex items-center justify-center rounded-2xl mb-5 w-16 h-16"
-                style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)" }}
-              >
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <ellipse cx="16" cy="8" rx="12" ry="5" fill="rgba(255,255,255,0.9)" />
-                  <path d="M4 8v8c0 2.76 5.37 5 12 5s12-2.24 12-5V8" stroke="rgba(255,255,255,0.9)" strokeWidth="2" fill="none"/>
-                  <path d="M4 16v8c0 2.76 5.37 5 12 5s12-2.24 12-5v-8" stroke="rgba(255,255,255,0.7)" strokeWidth="2" fill="none"/>
-                </svg>
-              </div>
-              <h1 className="text-2xl font-bold text-white tracking-wide mb-1">DB BHISHM TABLET</h1>
-              <p className="text-white/60 text-sm">Supply Editor · Secure Access</p>
+              <img
+                src="/gryfon-logo.png"
+                alt="Gryfon Technologies"
+                className="mb-4 mx-auto"
+                style={{
+                  filter: "brightness(0) invert(1)",
+                  width: "75%",
+                  maxWidth: "230px",
+                  objectFit: "contain",
+                }}
+              />
+              <h1 className="text-lg font-bold text-white tracking-widest mb-0.5">DB BHISHM TABLET</h1>
+              <p className="text-white/55 text-xs tracking-wide">Supply Editor · Secure Access</p>
             </div>
           </div>
 
