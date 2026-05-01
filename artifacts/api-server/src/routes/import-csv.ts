@@ -6,8 +6,8 @@ import { closeDb } from "../lib/db-sqlite";
 const router: IRouter = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
-router.get("/import-csv/status", (_req, res): void => {
-  res.json({ hasBackup: hasPreImportBackup() });
+router.get("/import-csv/status", (req, res): void => {
+  res.json({ hasBackup: hasPreImportBackup(req.session.userId!) });
 });
 
 router.post("/import-csv", upload.single("file"), (req, res): void => {
@@ -18,7 +18,7 @@ router.post("/import-csv", upload.single("file"), (req, res): void => {
     }
 
     const csvText = req.file.buffer.toString("utf-8");
-    const result = importCSVToDb(csvText, closeDb);
+    const result = importCSVToDb(csvText, req.session.userId!, closeDb);
 
     res.json({
       success: true,
@@ -32,9 +32,9 @@ router.post("/import-csv", upload.single("file"), (req, res): void => {
   }
 });
 
-router.post("/import-csv/revert", (_req, res): void => {
+router.post("/import-csv/revert", (req, res): void => {
   try {
-    revertImport(closeDb);
+    revertImport(req.session.userId!, closeDb);
     res.json({ success: true, message: "Database reverted to pre-import state." });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error during revert.";

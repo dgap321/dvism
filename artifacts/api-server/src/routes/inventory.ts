@@ -8,8 +8,8 @@ import {
 
 const router: IRouter = Router();
 
-router.get("/inventory", async (_req, res): Promise<void> => {
-  const db = getDb();
+router.get("/inventory", async (req, res): Promise<void> => {
+  const db = getDb(req.session.userId!);
   const rows = db
     .prepare(
       `SELECT ID, BoxNo, BoxTypeId, SkuCode, ItemName, Qty,
@@ -38,7 +38,7 @@ router.patch("/inventory/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const db = getDb();
+  const db = getDb(req.session.userId!);
   const existing = db
     .prepare("SELECT ID FROM MotherCuber3 WHERE ID = ?")
     .get(params.data.id);
@@ -84,7 +84,7 @@ router.delete("/inventory/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const db = getDb();
+  const db = getDb(req.session.userId!);
   const existing = db
     .prepare("SELECT ID FROM MotherCuber3 WHERE ID = ?")
     .get(params.data.id);

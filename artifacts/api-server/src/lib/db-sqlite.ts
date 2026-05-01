@@ -4,51 +4,99 @@ import { fileURLToPath } from "url";
 import fs from "fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, "..", "src", "bhishma.db");
-const DB_ORIGINAL_PATH = path.resolve(__dirname, "..", "src", "bhishma-original.db");
+const SRC_DIR = path.resolve(__dirname, "..", "src");
 
-let _db: DatabaseSync | null = null;
+export const AUTH_DB_PATH   = path.resolve(SRC_DIR, "auth.db");
+export const DB_ORIGINAL_PATH = path.resolve(SRC_DIR, "bhishma-original.db");
+export const USER_DBS_DIR   = path.resolve(SRC_DIR, "user_dbs");
 
-export function getDb(): DatabaseSync {
-  if (!_db) {
-    _db = new DatabaseSync(DB_PATH);
+// ── Auth DB (shared, never reset) ──────────────────────────────────────────
+let _authDb: DatabaseSync | null = null;
+
+export function getAuthDb(): DatabaseSync {
+  if (!_authDb) {
+    fs.mkdirSync(SRC_DIR, { recursive: true });
+    _authDb = new DatabaseSync(AUTH_DB_PATH);
   }
-  return _db;
+  return _authDb;
 }
 
-export function getDbPath(): string {
-  return DB_PATH;
+// ── Per-user data DBs ───────────────────────────────────────────────────────
+const _userDbs = new Map<number, DatabaseSync>();
+
+export function getUserDbPath(userId: number): string {
+  return path.resolve(USER_DBS_DIR, `bhishma-${userId}.db`);
 }
 
-export function closeDb(): void {
-  if (_db) {
-    try { _db.close(); } catch { /* ignore */ }
-    _db = null;
+export function getUserPreImportPath(userId: number): string {
+  return path.resolve(USER_DBS_DIR, `bhishma-${userId}-pre-import.db`);
+}
+
+export function initUserDb(userId: number): void {
+  fs.mkdirSync(USER_DBS_DIR, { recursive: true });
+  const userPath = getUserDbPath(userId);
+  if (!fs.existsSync(userPath)) {
+    if (!fs.existsSync(DB_ORIGINAL_PATH)) {
+      throw new Error("Original DB not found — cannot create user database.");
+    }
+    fs.copyFileSync(DB_ORIGINAL_PATH, userPath);
   }
 }
 
-export function initBackup(): void {
-  if (!fs.existsSync(DB_ORIGINAL_PATH) && fs.existsSync(DB_PATH)) {
-    fs.copyFileSync(DB_PATH, DB_ORIGINAL_PATH);
+export function getDb(userId: number): DatabaseSync {
+  if (!_userDbs.has(userId)) {
+    initUserDb(userId);
+    _userDbs.set(userId, new DatabaseSync(getUserDbPath(userId)));
+  }
+  return _userDbs.get(userId)!;
+}
+
+export function getDbPath(userId: number): string {
+  initUserDb(userId);
+  return getUserDbPath(userId);
+}
+
+export function closeDb(userId?: number): void {
+  if (userId !== undefined) {
+    const db = _userDbs.get(userId);
+    if (db) {
+      try { db.close(); } catch { /* ignore */ }
+      _userDbs.delete(userId);
+    }
+  } else {
+    for (const [id, db] of _userDbs) {
+      try { db.close(); } catch { /* ignore */ }
+      _userDbs.delete(id);
+    }
   }
 }
 
-export function resetDb(): void {
+export function resetDb(userId: number): void {
   if (!fs.existsSync(DB_ORIGINAL_PATH)) {
     throw new Error("No original backup found to restore from.");
   }
-  closeDb();
-  fs.copyFileSync(DB_ORIGINAL_PATH, DB_PATH);
+  closeDb(userId);
+  fs.copyFileSync(DB_ORIGINAL_PATH, getUserDbPath(userId));
+}
+
+export function initBackup(): void {
+  // Ensure the original reference DB exists. If not, try to seed from the
+  // legacy shared bhishma.db so the server isn't left without a template.
+  if (!fs.existsSync(DB_ORIGINAL_PATH)) {
+    const legacyPath = path.resolve(SRC_DIR, "bhishma.db");
+    if (fs.existsSync(legacyPath)) {
+      fs.copyFileSync(legacyPath, DB_ORIGINAL_PATH);
+    }
+  }
 }
 
 /**
- * Ensure EnglishMotherCube and HindiMotherCube have skuCode + invBoxNo columns,
- * and populate them for existing CSV-imported rows by aligning insert positions.
+ * Ensure EnglishMotherCube and HindiMotherCube have skuCode + invBoxNo columns
+ * on a given user's DB, and populate them from MotherCuber3 if needed.
  */
-export function migrateInventoryLink(): void {
-  const db = getDb();
+export function migrateInventoryLink(userId: number): void {
+  const db = getDb(userId);
 
-  // Add columns if they don't exist (SQLite ignores duplicate ADD COLUMN errors)
   const migrations = [
     "ALTER TABLE EnglishMotherCube ADD COLUMN skuCode TEXT",
     "ALTER TABLE HindiMotherCube ADD COLUMN skuCode TEXT",
@@ -59,9 +107,6 @@ export function migrateInventoryLink(): void {
     try { db.exec(sql); } catch { /* column already exists */ }
   }
 
-  // Populate skuCode and invBoxNo for rows that don't have them yet.
-  // During CSV import, rows are inserted in the same order into both tables,
-  // so: MotherCuber3.ID = EnglishMotherCube.id + (MIN(MotherCuber3.ID) - 1)
   const mc3Count = (db.prepare("SELECT COUNT(*) as c FROM MotherCuber3").get() as { c: number }).c;
   const emcCount = (db.prepare("SELECT COUNT(*) as c FROM EnglishMotherCube").get() as { c: number }).c;
 

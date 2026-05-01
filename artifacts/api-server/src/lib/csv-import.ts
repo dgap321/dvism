@@ -2,24 +2,22 @@ import { DatabaseSync } from "node:sqlite";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { getUserDbPath, getUserPreImportPath, DB_ORIGINAL_PATH } from "./db-sqlite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SRC_DIR = path.resolve(__dirname, "..", "src");
-const DB_PATH = path.resolve(SRC_DIR, "bhishma.db");
-const DB_ORIGINAL_PATH = path.resolve(SRC_DIR, "bhishma-original.db");
-const PRE_IMPORT_PATH = path.resolve(SRC_DIR, "bhishma-pre-import.db");
 
-export function hasPreImportBackup(): boolean {
-  return fs.existsSync(PRE_IMPORT_PATH);
+export function hasPreImportBackup(userId: number): boolean {
+  return fs.existsSync(getUserPreImportPath(userId));
 }
 
-export function revertImport(closeDb: () => void): void {
-  if (!fs.existsSync(PRE_IMPORT_PATH)) {
+export function revertImport(userId: number, closeDb: (uid?: number) => void): void {
+  const preImportPath = getUserPreImportPath(userId);
+  if (!fs.existsSync(preImportPath)) {
     throw new Error("No pre-import backup found to revert to.");
   }
-  closeDb();
-  fs.copyFileSync(PRE_IMPORT_PATH, DB_PATH);
-  fs.unlinkSync(PRE_IMPORT_PATH);
+  closeDb(userId);
+  fs.copyFileSync(preImportPath, getUserDbPath(userId));
+  fs.unlinkSync(preImportPath);
 }
 
 // ---------------------------------------------------------------------------
@@ -108,14 +106,18 @@ export function validateCSVColumns(rows: Record<string, string>[]): string[] {
 // ---------------------------------------------------------------------------
 export function importCSVToDb(
   csvText: string,
-  closeDb: () => void
+  userId: number,
+  closeDb: (uid?: number) => void
 ): { rowsImported: number; kitsImported: number; errors: string[] } {
   const rows = parseCSV(csvText);
   const errors = validateCSVColumns(rows);
   if (errors.length > 0) throw new Error(errors.join("; "));
 
+  const DB_PATH = getUserDbPath(userId);
+  const PRE_IMPORT_PATH = getUserPreImportPath(userId);
+
   // Back up current DB
-  closeDb();
+  closeDb(userId);
   if (fs.existsSync(DB_PATH)) {
     fs.copyFileSync(DB_PATH, PRE_IMPORT_PATH);
   }

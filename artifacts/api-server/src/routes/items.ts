@@ -8,8 +8,8 @@ import {
 
 const router: IRouter = Router();
 
-router.get("/items", async (_req, res): Promise<void> => {
-  const db = getDb();
+router.get("/items", async (req, res): Promise<void> => {
+  const db = getDb(req.session.userId!);
   const rows = db
     .prepare(
       `SELECT id, sNo, cubeID, cubeName, frameID, frameName, boxID, boxName,
@@ -27,7 +27,7 @@ router.get("/items/search", async (req, res): Promise<void> => {
     res.json([]);
     return;
   }
-  const db = getDb();
+  const db = getDb(req.session.userId!);
   const rows = db
     .prepare(
       `SELECT DISTINCT itemName, itemPhoto, category, status
@@ -56,7 +56,7 @@ router.patch("/items/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const db = getDb();
+  const db = getDb(req.session.userId!);
   const existing = db
     .prepare("SELECT * FROM EnglishMotherCube WHERE id = ?")
     .get(params.data.id) as Record<string, unknown> | undefined;
@@ -126,7 +126,7 @@ router.delete("/items/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const db = getDb();
+  const db = getDb(req.session.userId!);
   const existing = db
     .prepare("SELECT id, kitID, itemID FROM EnglishMotherCube WHERE id = ?")
     .get(params.data.id) as { id: number; kitID: string; itemID: string } | undefined;
@@ -144,7 +144,6 @@ router.delete("/items/:id", async (req, res): Promise<void> => {
 
   // Re-sequence: all items in the same kit with itemID number > deletedN get decremented by 1
   if (!isNaN(deletedN)) {
-    // Collect ids that need renumbering (ordered so we don't hit conflicts)
     const toRenumber = db
       .prepare(
         `SELECT id, itemID

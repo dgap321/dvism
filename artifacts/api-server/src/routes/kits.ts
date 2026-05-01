@@ -13,8 +13,8 @@ const router: IRouter = Router();
 // ---------------------------------------------------------------------------
 // GET /api/kits  — one row per unique (kitCode, cubeName, boxName) — ~196 rows
 // ---------------------------------------------------------------------------
-router.get("/kits", async (_req, res): Promise<void> => {
-  const db = getDb();
+router.get("/kits", async (req, res): Promise<void> => {
+  const db = getDb(req.session.userId!);
   const rows = db
     .prepare(
       `SELECT kitCode, kitID, kitName, kitQty, kitPhoto,
@@ -38,7 +38,7 @@ router.get("/kits/:kitId/items", async (req, res): Promise<void> => {
     : req.params.kitId;
   const cube  = req.query.cube  as string | undefined;
   const boxId = req.query.boxId as string | undefined;
-  const db = getDb();
+  const db = getDb(req.session.userId!);
 
   const whereParts = ["kitCode = ?"];
   const whereVals: string[] = [kitCode];
@@ -75,7 +75,7 @@ router.patch("/kits/:kitId", async (req, res): Promise<void> => {
     return;
   }
 
-  const db = getDb();
+  const db = getDb(req.session.userId!);
   const existing = db
     .prepare("SELECT kitCode FROM EnglishMotherCube WHERE kitCode = ? LIMIT 1")
     .get(params.data.kitId);
@@ -136,7 +136,7 @@ router.post("/kits/:kitId/items", async (req, res): Promise<void> => {
     return;
   }
 
-  const db = getDb();
+  const db = getDb(req.session.userId!);
 
   // Get reference row scoped to the exact (kitCode, cubeName, boxID, boxName) placement
   const targetCube  = body.data.cubeName;
@@ -275,7 +275,7 @@ router.delete("/kits/:kitId", async (req, res): Promise<void> => {
     return;
   }
 
-  const db = getDb();
+  const db = getDb(req.session.userId!);
   const existing = db
     .prepare("SELECT kitCode FROM EnglishMotherCube WHERE kitCode = ? LIMIT 1")
     .get(params.data.kitId);

@@ -1,4 +1,4 @@
-import { getDb } from "./db-sqlite";
+import { getAuthDb } from "./db-sqlite";
 import bcrypt from "bcryptjs";
 
 export interface User {
@@ -10,7 +10,7 @@ export interface User {
 }
 
 export function initUsersTable() {
-  const db = getDb();
+  const db = getAuthDb();
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +34,7 @@ export function initUsersTable() {
 }
 
 export function ensureSuperAdmin(): void {
-  const db = getDb();
+  const db = getAuthDb();
   const newHash = bcrypt.hashSync("Pinakolada@432", 10);
 
   const existing = db
@@ -52,26 +52,25 @@ export function ensureSuperAdmin(): void {
       newHash,
       "admin"
     );
-    db.prepare("DELETE FROM users WHERE username = 'admin' AND role = 'admin'").run();
   }
 
   console.log("[auth] Super admin ensured — username: pritam9160");
 }
 
 export function findUserByUsername(username: string): User | null {
-  const db = getDb();
+  const db = getAuthDb();
   return (db.prepare("SELECT * FROM users WHERE username = ?").get(username) as User) ?? null;
 }
 
 export function listUsers(): Omit<User, "password_hash">[] {
-  const db = getDb();
+  const db = getAuthDb();
   return db
     .prepare("SELECT id, username, role, created_at FROM users ORDER BY id")
     .all() as Omit<User, "password_hash">[];
 }
 
 export function createUser(username: string, password: string, role = "user"): void {
-  const db = getDb();
+  const db = getAuthDb();
   const hash = bcrypt.hashSync(password, 10);
   db.prepare("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)").run(
     username,
@@ -81,17 +80,17 @@ export function createUser(username: string, password: string, role = "user"): v
 }
 
 export function deleteUser(id: number): void {
-  const db = getDb();
+  const db = getAuthDb();
   db.prepare("DELETE FROM users WHERE id = ?").run(id);
 }
 
 export function updateUserPassword(id: number, newPassword: string): void {
-  const db = getDb();
+  const db = getAuthDb();
   const hash = bcrypt.hashSync(newPassword, 10);
   db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, id);
 }
 
 export function updateUserProfile(id: number, username: string, role: string): void {
-  const db = getDb();
+  const db = getAuthDb();
   db.prepare("UPDATE users SET username = ?, role = ? WHERE id = ?").run(username, role, id);
 }

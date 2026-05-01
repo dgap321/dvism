@@ -10,13 +10,13 @@ const TEMPLATE_ZIP = path.resolve(__dirname, "..", "src", "bhishma-project-templ
 
 const router: IRouter = Router();
 
-router.get("/export-studio", async (_req, res): Promise<void> => {
+router.get("/export-studio", async (req, res): Promise<void> => {
   if (!fs.existsSync(TEMPLATE_ZIP)) {
     res.status(500).json({ error: "Project template ZIP not found on server." });
     return;
   }
 
-  const dbPath = getDbPath();
+  const dbPath = getDbPath(req.session.userId!);
   const dbBuffer = fs.readFileSync(dbPath);
 
   const zip = new AdmZip(TEMPLATE_ZIP);

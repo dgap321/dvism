@@ -3,8 +3,8 @@ import { getDbPath } from "../lib/db-sqlite";
 
 const router: IRouter = Router();
 
-router.get("/export", async (_req, res): Promise<void> => {
-  const dbPath = getDbPath();
+router.get("/export", async (req, res): Promise<void> => {
+  const dbPath = getDbPath(req.session.userId!);
   res.setHeader(
     "Content-Disposition",
     'attachment; filename="bhishma_updated.db"'
