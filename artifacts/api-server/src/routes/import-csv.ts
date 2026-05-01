@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import multer from "multer";
 import { importCSVToDb, revertImport, hasPreImportBackup } from "../lib/csv-import";
 import { closeDb } from "../lib/db-sqlite";
+import { logChange } from "../lib/changes-log";
 
 const router: IRouter = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -17,8 +18,17 @@ router.post("/import-csv", upload.single("file"), (req, res): void => {
       return;
     }
 
+    const userId = req.session.userId!;
+    const username = req.session.username!;
     const csvText = req.file.buffer.toString("utf-8");
-    const result = importCSVToDb(csvText, req.session.userId!, closeDb);
+    const result = importCSVToDb(csvText, userId, closeDb);
+
+    logChange(
+      userId,
+      username,
+      "CSV Import",
+      `${result.rowsImported} items, ${result.kitsImported} kits imported from "${req.file.originalname}"`
+    );
 
     res.json({
       success: true,
@@ -34,7 +44,10 @@ router.post("/import-csv", upload.single("file"), (req, res): void => {
 
 router.post("/import-csv/revert", (req, res): void => {
   try {
-    revertImport(req.session.userId!, closeDb);
+    const userId = req.session.userId!;
+    const username = req.session.username!;
+    revertImport(userId, closeDb);
+    logChange(userId, username, "Reverted CSV Import", "Database restored to pre-import backup");
     res.json({ success: true, message: "Database reverted to pre-import state." });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error during revert.";

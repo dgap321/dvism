@@ -13,7 +13,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Download, FolderArchive, Trash2, RotateCcw, DatabaseZap } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  FolderArchive,
+  Trash2,
+  RotateCcw,
+  DatabaseZap,
+  ClipboardList,
+  User,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { AppFooter } from "@/components/app-footer";
 
@@ -22,6 +31,17 @@ interface Formation {
   name: string;
   date: string;
   type: "sqlite" | "studio";
+  userId: number;
+  username: string;
+}
+
+interface ChangeEntry {
+  id: string;
+  userId: number;
+  username: string;
+  action: string;
+  details: string;
+  date: string;
 }
 
 function formatDate(iso: string): string {
@@ -49,7 +69,8 @@ const lightCancelBtn = {
 } as React.CSSProperties;
 
 export default function SavedFormations() {
-  const { user: _user, logout } = useAuth();
+  const { user, logout } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -61,6 +82,15 @@ export default function SavedFormations() {
     queryFn: async () => {
       const res = await fetch("/api/saved-formations", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load formations");
+      return res.json();
+    },
+  });
+
+  const { data: changes = [], isLoading: changesLoading } = useQuery<ChangeEntry[]>({
+    queryKey: ["changes-log"],
+    queryFn: async () => {
+      const res = await fetch("/api/changes-log", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load changes log");
       return res.json();
     },
   });
@@ -92,7 +122,7 @@ export default function SavedFormations() {
       }
     },
     onSuccess: () => {
-      toast({ title: "Database reset", description: "bhishma.db has been restored to its original state." });
+      toast({ title: "Database reset", description: "Your database has been restored to its original state." });
       queryClient.invalidateQueries();
     },
     onError: (err: Error) =>
@@ -101,146 +131,272 @@ export default function SavedFormations() {
 
   const handleLogout = async () => { await logout(); navigate("/login"); };
 
+  const handleDownload = (f: Formation) => {
+    // Admin downloading another user's formation → use admin export endpoint
+    if (isAdmin && f.userId !== user?.id) {
+      window.open(`/api/export-user/${f.userId}`, "_blank");
+    } else {
+      // Own formation → export current state of own DB
+      window.open(f.type === "sqlite" ? "/api/export" : "/api/export-studio", "_blank");
+    }
+  };
+
   return (
     <div className="min-h-screen aurora-bg flex flex-col">
       <div className="sticky top-0 z-10 px-4 pt-3">
         <div className="ios-header rounded-2xl">
-        <div className="container max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src="/gryfon-logo.png"
-              alt="Gryfon Technologies"
-              style={{ filter: "brightness(0)", opacity: 0.75, height: "46px", objectFit: "contain" }}
-            />
-            <div className="h-5 w-px opacity-30" style={{ background: "rgba(0,0,0,0.6)" }} />
-            <div>
-              <h1 className="font-bold text-sm leading-tight tracking-widest gradient-text">
-                SAVED FORMATIONS
-              </h1>
-              <p className="text-[10px] text-muted-foreground leading-none tracking-wide">Export History</p>
+          <div className="container max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img
+                src="/gryfon-logo.png"
+                alt="Gryfon Technologies"
+                style={{ filter: "brightness(0)", opacity: 0.75, height: "46px", objectFit: "contain" }}
+              />
+              <div className="h-5 w-px opacity-30" style={{ background: "rgba(0,0,0,0.6)" }} />
+              <div>
+                <h1 className="font-bold text-sm leading-tight tracking-widest gradient-text">
+                  SAVED FORMATIONS
+                </h1>
+                <p className="text-[10px] text-muted-foreground leading-none tracking-wide">Export History</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={() => navigate("/")}
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs"
+                style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back to Editor
+              </Button>
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                size="sm"
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Sign out
+              </Button>
             </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => navigate("/")}
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs"
-              style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Back to Editor
-            </Button>
-            <Button
-              onClick={handleLogout}
-              variant="ghost"
-              size="sm"
-              className="text-xs text-muted-foreground hover:text-foreground"
-            >
-              Sign out
-            </Button>
-          </div>
-        </div>
         </div>
       </div>
 
-      <main className="flex-1 container max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Export History</h2>
+      <main className="flex-1 container max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+        {/* --- Formations Table --- */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Export History</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {isAdmin
+                  ? "All users' saved formations. Download their current database or delete entries."
+                  : "Your saved formations. Download again or delete entries."}
+              </p>
+            </div>
+
+            <Button
+              onClick={() => setResetOpen(true)}
+              size="sm"
+              className="gap-2 font-semibold text-white"
+              style={{ background: "#dc2626", border: "none" }}
+            >
+              <RotateCcw className="h-4 w-4" />
+              RESET DB
+            </Button>
+          </div>
+
+          <div className="glass-card rounded-2xl overflow-hidden">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
+                Loading…
+              </div>
+            ) : formations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground">
+                <DatabaseZap className="h-10 w-10 opacity-30" />
+                <p className="text-sm">No formations saved yet.</p>
+                <p className="text-xs opacity-60">Export SQLite or Studio from the main editor to create one.</p>
+              </div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.08)" }}>
+                    <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
+                    {isAdmin && (
+                      <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <span className="flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          Saved By
+                        </span>
+                      </th>
+                    )}
+                    <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
+                    <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Date &amp; Time</th>
+                    <th className="px-5 py-3" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {formations.map((f) => (
+                    <tr
+                      key={f.id}
+                      style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}
+                      className="hover:bg-black/[0.025] transition-colors"
+                    >
+                      <td className="px-5 py-3.5 font-medium text-foreground">{f.name}</td>
+                      {isAdmin && (
+                        <td className="px-5 py-3.5">
+                          <span
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
+                            style={{
+                              background: "rgba(59,130,246,0.10)",
+                              color: "#1d4ed8",
+                              border: "1px solid rgba(59,130,246,0.22)",
+                            }}
+                          >
+                            <User className="h-3 w-3" />
+                            {f.username ?? "—"}
+                          </span>
+                        </td>
+                      )}
+                      <td className="px-5 py-3.5">
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
+                          style={{
+                            background: f.type === "sqlite" ? "rgba(249,115,22,0.12)" : "rgba(139,92,246,0.12)",
+                            color: f.type === "sqlite" ? "#c05c0a" : "#6d28d9",
+                            border: `1px solid ${f.type === "sqlite" ? "rgba(249,115,22,0.25)" : "rgba(139,92,246,0.25)"}`,
+                          }}
+                        >
+                          {f.type === "sqlite" ? (
+                            <Download className="h-3 w-3" />
+                          ) : (
+                            <FolderArchive className="h-3 w-3" />
+                          )}
+                          {f.type === "sqlite" ? "SQLite" : "Studio"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-muted-foreground">{formatDate(f.date)}</td>
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5 text-xs h-7"
+                            style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
+                            onClick={() => handleDownload(f)}
+                          >
+                            <Download className="h-3 w-3" />
+                            {isAdmin && f.userId !== user?.id ? "Download User DB" : "Download"}
+                          </Button>
+                          {(isAdmin || f.userId === user?.id) && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              onClick={() => setDeleteTarget(f)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        {/* --- Changes Log --- */}
+        <div>
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 opacity-60" />
+              Changes Log
+            </h2>
             <p className="text-sm text-muted-foreground mt-0.5">
-              All saved formations appear below. Download again or delete entries.
+              {isAdmin ? "All users' key actions — imports, resets, and exports." : "Your key actions — imports, resets, and exports."}
             </p>
           </div>
 
-          <Button
-            onClick={() => setResetOpen(true)}
-            size="sm"
-            className="gap-2 font-semibold text-white"
-            style={{ background: "#dc2626", border: "none" }}
-          >
-            <RotateCcw className="h-4 w-4" />
-            RESET DB
-          </Button>
-        </div>
-
-        <div className="glass-card rounded-2xl overflow-hidden">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
-              Loading…
-            </div>
-          ) : formations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground">
-              <DatabaseZap className="h-10 w-10 opacity-30" />
-              <p className="text-sm">No formations saved yet.</p>
-              <p className="text-xs opacity-60">Export SQLite or Studio from the main editor to create one.</p>
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.08)" }}>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
-                  <th className="px-5 py-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {formations.map((f) => (
-                  <tr
-                    key={f.id}
-                    style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}
-                    className="hover:bg-black/[0.025] transition-colors"
-                  >
-                    <td className="px-5 py-3.5 font-medium text-foreground">{f.name}</td>
-                    <td className="px-5 py-3.5">
-                      <span
-                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
-                        style={{
-                          background: f.type === "sqlite" ? "rgba(249,115,22,0.12)" : "rgba(139,92,246,0.12)",
-                          color: f.type === "sqlite" ? "#c05c0a" : "#6d28d9",
-                          border: `1px solid ${f.type === "sqlite" ? "rgba(249,115,22,0.25)" : "rgba(139,92,246,0.25)"}`,
-                        }}
-                      >
-                        {f.type === "sqlite" ? (
-                          <Download className="h-3 w-3" />
-                        ) : (
-                          <FolderArchive className="h-3 w-3" />
-                        )}
-                        {f.type === "sqlite" ? "SQLite" : "Studio"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-muted-foreground">{formatDate(f.date)}</td>
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="gap-1.5 text-xs h-7"
-                          style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(200,180,140,0.4)" }}
-                          onClick={() => {
-                            window.open(f.type === "sqlite" ? "/api/export" : "/api/export-studio", "_blank");
-                          }}
-                        >
-                          <Download className="h-3 w-3" />
-                          Download
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          onClick={() => setDeleteTarget(f)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </td>
+          <div className="glass-card rounded-2xl overflow-hidden">
+            {changesLoading ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
+                Loading…
+              </div>
+            ) : changes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
+                <ClipboardList className="h-9 w-9 opacity-25" />
+                <p className="text-sm">No changes recorded yet.</p>
+              </div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.08)" }}>
+                    <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Date &amp; Time</th>
+                    {isAdmin && (
+                      <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        <span className="flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          User
+                        </span>
+                      </th>
+                    )}
+                    <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Action</th>
+                    <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Details</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody>
+                  {changes.map((c) => (
+                    <tr
+                      key={c.id}
+                      style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}
+                      className="hover:bg-black/[0.025] transition-colors"
+                    >
+                      <td className="px-5 py-3 text-muted-foreground whitespace-nowrap">{formatDate(c.date)}</td>
+                      {isAdmin && (
+                        <td className="px-5 py-3">
+                          <span
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium"
+                            style={{
+                              background: "rgba(59,130,246,0.10)",
+                              color: "#1d4ed8",
+                              border: "1px solid rgba(59,130,246,0.22)",
+                            }}
+                          >
+                            <User className="h-3 w-3" />
+                            {c.username}
+                          </span>
+                        </td>
+                      )}
+                      <td className="px-5 py-3">
+                        <span
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+                          style={
+                            c.action === "Reset DB"
+                              ? { background: "rgba(220,38,38,0.10)", color: "#b91c1c", border: "1px solid rgba(220,38,38,0.22)" }
+                              : c.action === "CSV Import"
+                              ? { background: "rgba(22,163,74,0.10)", color: "#15803d", border: "1px solid rgba(22,163,74,0.22)" }
+                              : c.action === "Reverted CSV Import"
+                              ? { background: "rgba(234,179,8,0.12)", color: "#92400e", border: "1px solid rgba(234,179,8,0.30)" }
+                              : { background: "rgba(249,115,22,0.10)", color: "#c05c0a", border: "1px solid rgba(249,115,22,0.22)" }
+                          }
+                        >
+                          {c.action}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-muted-foreground text-xs">{c.details}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       </main>
 
@@ -254,8 +410,8 @@ export default function SavedFormations() {
               Reset the Database?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
-              This will permanently overwrite <strong className="text-foreground">bhishma.db</strong> with its original state.
-              All changes to items, kits, and inventory made since initial setup will be lost. This action cannot be undone.
+              This will permanently overwrite <strong className="text-foreground">your database</strong> with its original state.
+              All changes to items, kits, and inventory will be lost. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -278,7 +434,8 @@ export default function SavedFormations() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-foreground">Delete Formation?</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
-              Remove <strong className="text-foreground">{deleteTarget?.name}</strong> from your history? This only removes the record — it does not affect the database.
+              Remove <strong className="text-foreground">{deleteTarget?.name}</strong> from history?
+              This only removes the record — it does not affect any database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

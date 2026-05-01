@@ -94,3 +94,9 @@ export function updateUserProfile(id: number, username: string, role: string): v
   const db = getAuthDb();
   db.prepare("UPDATE users SET username = ?, role = ? WHERE id = ?").run(username, role, id);
 }
+
+export function getUsernameById(id: number): string | null {
+  const db = getAuthDb();
+  const row = db.prepare("SELECT username FROM users WHERE id = ?").get(id) as { username: string } | undefined;
+  return row?.username ?? null;
+}

@@ -11,6 +11,8 @@ export interface Formation {
   name: string;
   date: string;
   type: "sqlite" | "studio";
+  userId: number;
+  username: string;
 }
 
 function readAll(): Formation[] {
@@ -26,27 +28,39 @@ function writeAll(formations: Formation[]): void {
   fs.writeFileSync(FORMATIONS_PATH, JSON.stringify(formations, null, 2), "utf-8");
 }
 
-export function listFormations(): Formation[] {
-  return readAll().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+export function listFormations(userId: number, role: string): Formation[] {
+  const all = readAll().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  if (role === "admin") return all;
+  return all.filter((f) => f.userId === userId);
 }
 
-export function addFormation(name: string, type: "sqlite" | "studio"): Formation {
+export function addFormation(
+  name: string,
+  type: "sqlite" | "studio",
+  userId: number,
+  username: string
+): Formation {
   const all = readAll();
   const entry: Formation = {
     id: randomUUID(),
     name,
     date: new Date().toISOString(),
     type,
+    userId,
+    username,
   };
   all.push(entry);
   writeAll(all);
   return entry;
 }
 
-export function deleteFormation(id: string): boolean {
+export function deleteFormation(id: string, userId: number, role: string): boolean {
   const all = readAll();
+  const target = all.find((f) => f.id === id);
+  if (!target) return false;
+  // Only admin or the owner can delete
+  if (role !== "admin" && target.userId !== userId) return false;
   const next = all.filter((f) => f.id !== id);
-  if (next.length === all.length) return false;
   writeAll(next);
   return true;
 }
