@@ -10,5 +10,11 @@
     "name": "test 2",
     "date": "2026-04-11T23:09:04.169Z",
     "type": "sqlite"
+  },
+  {
+    "id": "d519fddf-35f3-4c92-8582-6e83643dd14c",
+    "name": "test 3",
+    "date": "2026-04-11T23:36:27.157Z",
+    "type": "studio"
   }
 ]
