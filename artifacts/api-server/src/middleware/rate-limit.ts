@@ -48,25 +48,6 @@ export function resetAttempts(ip: string): void {
   attempts.delete(ip);
 }
 
-export async function checkVpn(ip: string): Promise<boolean> {
-  if (!ip || ip === "unknown" || ip === "::1" || ip.startsWith("127.") || ip.startsWith("192.168.") || ip.startsWith("10.") || ip.startsWith("172.")) {
-    return false;
-  }
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
-    const res = await fetch(`https://proxycheck.io/v2/${ip}?vpn=1&risk=1`, {
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-    if (!res.ok) return false;
-    const data = (await res.json()) as Record<string, unknown>;
-    const ipData = data[ip] as Record<string, unknown> | undefined;
-    return ipData?.proxy === "yes";
-  } catch {
-    return false;
-  }
-}
 
 export function rateLimitMiddleware(req: Request, res: Response, next: NextFunction): void {
   const ip = getClientIp(req);

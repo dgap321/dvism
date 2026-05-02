@@ -8,7 +8,6 @@ import {
   isLockedOut,
   recordFailedAttempt,
   resetAttempts,
-  checkVpn,
 } from "../middleware/rate-limit";
 
 declare module "express-session" {
@@ -49,15 +48,6 @@ router.post("/auth/login", async (req: Request, res): Promise<void> => {
       error: "too_many_attempts",
       message: "Too many failed attempts. Please wait before trying again.",
       remainingMs,
-    });
-    return;
-  }
-
-  const isVpn = await checkVpn(ip);
-  if (isVpn) {
-    res.status(403).json({
-      error: "vpn_detected",
-      message: "Access from VPN or proxy networks is not allowed.",
     });
     return;
   }

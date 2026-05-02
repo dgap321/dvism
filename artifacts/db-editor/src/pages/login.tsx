@@ -49,8 +49,6 @@ export default function LoginPage() {
       } else if (res.status === 429) {
         setCooldownMs(data.remainingMs ?? 5 * 60 * 1000);
         setError("Too many failed attempts. Please wait before trying again.");
-      } else if (res.status === 403) {
-        setError("Access from VPN or proxy networks is not allowed.");
       } else {
         setError(data.message ?? "Invalid username or password.");
         if (data.locked) setCooldownMs(data.remainingMs ?? 5 * 60 * 1000);
