@@ -136,6 +136,8 @@ export function importCSVToDb(
     "ALTER TABLE HindiMotherCube ADD COLUMN skuCode TEXT",
     "ALTER TABLE EnglishMotherCube ADD COLUMN invBoxNo TEXT",
     "ALTER TABLE HindiMotherCube ADD COLUMN invBoxNo TEXT",
+    "ALTER TABLE EnglishMotherCube ADD COLUMN itemExpiryDate TEXT",
+    "ALTER TABLE HindiMotherCube ADD COLUMN itemExpiryDate TEXT",
   ];
   for (const sql of colMigrations) {
     try { db.exec(sql); } catch { /* column already exists */ }

@@ -5,6 +5,8 @@ import {
   UpdateItemParams,
   DeleteItemParams,
 } from "@workspace/api-zod";
+import { logChange } from "../lib/changes-log";
+import { getUsernameById } from "../lib/auth-db";
 
 const router: IRouter = Router();
 
@@ -88,6 +90,10 @@ router.patch("/items/:id", async (req, res): Promise<void> => {
     updates.push("status = ?");
     values.push(body.data.status);
   }
+  if (body.data.itemExpiryDate !== undefined) {
+    updates.push("itemExpiryDate = ?");
+    values.push(body.data.itemExpiryDate ?? "");
+  }
 
   if (updates.length > 0) {
     values.push(params.data.id);
@@ -107,6 +113,23 @@ router.patch("/items/:id", async (req, res): Promise<void> => {
           `UPDATE MotherCuber3 SET ItemName = ? WHERE SkuCode = ? AND BoxNo = ?`
         ).run(body.data.itemName, skuCode, invBoxNo);
       }
+    }
+
+    // Log expiry date edits in changes log
+    if (body.data.itemExpiryDate !== undefined) {
+      const userId = req.session.userId!;
+      const username = getUsernameById(userId) ?? `user-${userId}`;
+      const itemName = (body.data.itemName ?? existing["itemName"]) as string;
+      const itemID = existing["itemID"] as string;
+      const oldRaw = (existing["itemExpiryDate"] as string | null) ?? "";
+      const oldExp = oldRaw === "" ? "(none)" : oldRaw;
+      const newExp = body.data.itemExpiryDate ? body.data.itemExpiryDate : "(cleared)";
+      logChange(
+        userId,
+        username,
+        "Edited Item Expiry",
+        `${itemName} (${itemID}): ${oldExp} → ${newExp}`
+      );
     }
   }
 

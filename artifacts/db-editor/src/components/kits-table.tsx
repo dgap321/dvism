@@ -45,6 +45,7 @@ interface KitItem {
   itemPhoto: string | null;
   status: string | null;
   category: string | null;
+  itemExpiryDate: string | null;
 }
 
 interface SearchSuggestion {
@@ -62,6 +63,7 @@ type AddItemForm = {
   category: string;
   kitPhoto: string;
   kitCode: string;
+  itemExpiryDate: string;
 };
 
 type EditItemForm = {
@@ -70,6 +72,7 @@ type EditItemForm = {
   itemPhoto: string;
   status: string;
   category: string;
+  itemExpiryDate: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -242,7 +245,7 @@ function KitItemsPanel({
   const [editingItem, setEditingItem] = useState<KitItem | null>(null);
   const [deletingItem, setDeletingItem] = useState<KitItem | null>(null);
   const [editForm, setEditForm] = useState<EditItemForm>({
-    itemName: "", itemQty: "", itemPhoto: "", status: "A", category: "",
+    itemName: "", itemQty: "", itemPhoto: "", status: "A", category: "", itemExpiryDate: "",
   });
 
   const kitItemsKey = ["kit-items", kit.kitCode, kit.cubeName, kit.boxID];
@@ -270,6 +273,7 @@ function KitItemsPanel({
       itemPhoto: item.itemPhoto ?? "",
       status: item.status ?? "A",
       category: item.category ?? "",
+      itemExpiryDate: item.itemExpiryDate ?? "",
     });
   };
 
@@ -284,12 +288,14 @@ function KitItemsPanel({
           itemPhoto: editForm.itemPhoto,
           status: editForm.status,
           category: editForm.category,
+          itemExpiryDate: editForm.itemExpiryDate || null,
         },
       },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: kitItemsKey });
           queryClient.invalidateQueries({ queryKey: getListItemsQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getListKitsQueryKey() });
           setEditingItem(null);
           toast({ title: "Item updated" });
         },
@@ -344,39 +350,61 @@ function KitItemsPanel({
                   <TableHead className="h-8 text-xs">Item Name</TableHead>
                   <TableHead className="h-8 text-xs w-[60px]">Qty</TableHead>
                   <TableHead className="h-8 text-xs">Photo</TableHead>
+                  <TableHead className="h-8 text-xs w-[120px]">Expiry Date</TableHead>
                   <TableHead className="h-8 text-xs w-[60px]">Status</TableHead>
                   <TableHead className="h-8 text-xs text-right w-[90px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id} className="hover:bg-white/[0.02]">
-                    <TableCell className="py-1.5 font-mono text-xs text-muted-foreground">{item.itemID}</TableCell>
-                    <TableCell className="py-1.5 text-sm font-medium">{item.itemName}</TableCell>
-                    <TableCell className="py-1.5 text-sm">{item.itemQty}</TableCell>
-                    <TableCell className="py-1.5 text-xs text-muted-foreground font-mono truncate max-w-[140px]">
-                      {item.itemPhoto || <span className="italic text-muted-foreground/50">none</span>}
-                    </TableCell>
-                    <TableCell className="py-1.5">
-                      <Badge variant={item.status === "A" || item.status === "OK" ? "secondary" : "outline"}
-                        className="text-[10px] font-mono">
-                        {item.status || "—"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="py-1.5 text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-6 w-6"
-                          onClick={() => handleEditClick(item)}>
-                          <Edit className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-6 w-6"
-                          onClick={() => setDeletingItem(item)}>
-                          <Trash2 className="h-3.5 w-3.5 text-destructive/70" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {items.map((item) => {
+                  const exp = item.itemExpiryDate;
+                  const expDate = exp ? new Date(exp) : null;
+                  const now = new Date();
+                  const isExpired = expDate && expDate < now;
+                  const isSoon = expDate && !isExpired &&
+                    (expDate.getTime() - now.getTime()) < 1000 * 60 * 60 * 24 * 90;
+                  return (
+                    <TableRow key={item.id} className="hover:bg-white/[0.02]">
+                      <TableCell className="py-1.5 font-mono text-xs text-muted-foreground">{item.itemID}</TableCell>
+                      <TableCell className="py-1.5 text-sm font-medium">{item.itemName}</TableCell>
+                      <TableCell className="py-1.5 text-sm">{item.itemQty}</TableCell>
+                      <TableCell className="py-1.5 text-xs text-muted-foreground font-mono truncate max-w-[140px]">
+                        {item.itemPhoto || <span className="italic text-muted-foreground/50">none</span>}
+                      </TableCell>
+                      <TableCell className="py-1.5 text-xs">
+                        {exp ? (
+                          <span className={`font-mono ${
+                            isExpired ? "text-destructive font-semibold" :
+                            isSoon ? "text-amber-600 font-medium" :
+                            "text-foreground/80"
+                          }`}>
+                            {exp}
+                          </span>
+                        ) : (
+                          <span className="italic text-muted-foreground/50">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-1.5">
+                        <Badge variant={item.status === "A" || item.status === "OK" ? "secondary" : "outline"}
+                          className="text-[10px] font-mono">
+                          {item.status || "—"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-1.5 text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-6 w-6"
+                            onClick={() => handleEditClick(item)}>
+                            <Edit className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-6 w-6"
+                            onClick={() => setDeletingItem(item)}>
+                            <Trash2 className="h-3.5 w-3.5 text-destructive/70" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
@@ -412,10 +440,24 @@ function KitItemsPanel({
               <Input value={editForm.itemPhoto}
                 onChange={(e) => setEditForm((p) => ({ ...p, itemPhoto: e.target.value }))} />
             </div>
-            <div className="grid gap-1.5">
-              <Label>Category</Label>
-              <Input value={editForm.category}
-                onChange={(e) => setEditForm((p) => ({ ...p, category: e.target.value }))} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-1.5">
+                <Label>Category</Label>
+                <Input value={editForm.category}
+                  onChange={(e) => setEditForm((p) => ({ ...p, category: e.target.value }))} />
+              </div>
+              <div className="grid gap-1.5">
+                <Label className="flex items-center gap-1">
+                  Expiry Date
+                  <span className="text-[10px] font-normal text-primary/70 bg-primary/10 rounded px-1">
+                    sets kit min
+                  </span>
+                </Label>
+                <Input type="date"
+                  value={editForm.itemExpiryDate}
+                  onChange={(e) => setEditForm((p) => ({ ...p, itemExpiryDate: e.target.value }))}
+                  data-testid="input-edit-item-expiry" />
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -471,7 +513,7 @@ export function KitsTable() {
   const [editKitForm, setEditKitForm] = useState({ kitName: "", kitQty: "" });
   const [addItemForm, setAddItemForm] = useState<AddItemForm>({
     itemName: "", itemQty: "", itemPhoto: "",
-    status: "A", category: "", kitPhoto: "", kitCode: "",
+    status: "A", category: "", kitPhoto: "", kitCode: "", itemExpiryDate: "",
   });
 
   const { toast } = useToast();
@@ -574,6 +616,7 @@ export function KitsTable() {
       status: "A", category: "",
       kitPhoto: kit.kitPhoto ?? "",
       kitCode: kit.kitCode ?? "",
+      itemExpiryDate: "",
     });
   };
 
@@ -604,6 +647,7 @@ export function KitsTable() {
           category: addItemForm.category.trim(),
           kitPhoto: addItemForm.kitPhoto.trim(),
           kitCode: addItemForm.kitCode.trim(),
+          itemExpiryDate: addItemForm.itemExpiryDate,
           cubeName: addingToKit.cubeName,
           boxID: addingToKit.boxID,
           boxName: addingToKit.boxName,
@@ -711,6 +755,7 @@ export function KitsTable() {
               <TableHead>Kit Name</TableHead>
               <TableHead className="w-[50px]">Qty</TableHead>
               <TableHead className="w-[80px]">Items</TableHead>
+              <TableHead className="w-[120px]">Kit Expiry</TableHead>
               <TableHead>Box / Frame</TableHead>
               <TableHead>Cube</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -720,14 +765,14 @@ export function KitsTable() {
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 8 }).map((__, j) => (
+                  {Array.from({ length: 9 }).map((__, j) => (
                     <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : filteredKits.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={9} className="h-32 text-center text-muted-foreground">
                   No kits found.
                 </TableCell>
               </TableRow>
@@ -762,6 +807,26 @@ export function KitsTable() {
                       <TableCell className="text-muted-foreground text-sm">
                         {kit.itemCount} items
                       </TableCell>
+                      <TableCell className="text-xs">
+                        {(() => {
+                          const exp = kit.kitExpiryDate;
+                          if (!exp) return <span className="italic text-muted-foreground/50">—</span>;
+                          const expDate = new Date(exp);
+                          const now = new Date();
+                          const isExpired = expDate < now;
+                          const isSoon = !isExpired &&
+                            (expDate.getTime() - now.getTime()) < 1000 * 60 * 60 * 24 * 90;
+                          return (
+                            <span className={`font-mono ${
+                              isExpired ? "text-destructive font-semibold" :
+                              isSoon ? "text-amber-600 font-medium" :
+                              "text-foreground/80"
+                            }`} title="Min of all item expiry dates in this kit">
+                              {exp}
+                            </span>
+                          );
+                        })()}
+                      </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         <span className="font-mono text-xs text-primary/60 mr-1">{kit.boxID}</span>
                         {kit.boxName} / {kit.frameName}
@@ -794,7 +859,7 @@ export function KitsTable() {
                     {/* Expanded items panel */}
                     {isExpanded && (
                       <TableRow className="hover:bg-transparent">
-                        <TableCell colSpan={8} className="p-0">
+                        <TableCell colSpan={9} className="p-0">
                           <KitItemsPanel
                             kit={kit}
                             onAddItem={() => handleAddItemClick(kit)}
@@ -894,14 +959,29 @@ export function KitsTable() {
               </div>
             </div>
 
-            <div className="grid gap-1.5">
-              <Label>Category</Label>
-              <Input
-                placeholder="e.g. Medicine"
-                value={addItemForm.category}
-                onChange={(e) => setAddItemForm((p) => ({ ...p, category: e.target.value }))}
-                data-testid="input-add-item-category"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-1.5">
+                <Label>Category</Label>
+                <Input
+                  placeholder="e.g. Medicine"
+                  value={addItemForm.category}
+                  onChange={(e) => setAddItemForm((p) => ({ ...p, category: e.target.value }))}
+                  data-testid="input-add-item-category"
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label className="flex items-center gap-1">
+                  Expiry Date
+                  <span className="text-[10px] font-normal text-primary/70 bg-primary/10 rounded px-1">
+                    sets kit min
+                  </span>
+                </Label>
+                <Input type="date"
+                  value={addItemForm.itemExpiryDate}
+                  onChange={(e) => setAddItemForm((p) => ({ ...p, itemExpiryDate: e.target.value }))}
+                  data-testid="input-add-item-expiry"
+                />
+              </div>
             </div>
 
             <div className="grid gap-1.5">

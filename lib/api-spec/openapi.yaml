@@ -322,6 +322,8 @@ components:
           type: ["string", "null"]
         itemQty:
           type: ["string", "null"]
+        itemExpiryDate:
+          type: ["string", "null"]
         status:
           type: ["string", "null"]
         category:
@@ -336,6 +338,14 @@ components:
           type: string
         itemQty:
           type: string
+        itemPhoto:
+          type: string
+        status:
+          type: string
+        category:
+          type: string
+        itemExpiryDate:
+          type: ["string", "null"]
 
     Kit:
       type: object
@@ -358,6 +368,8 @@ components:
           type: ["string", "null"]
         itemCount:
           type: integer
+        kitExpiryDate:
+          type: ["string", "null"]
       required:
         - kitID
         - itemCount
@@ -417,6 +429,14 @@ components:
         kitCode:
           type: string
         itemPhoto:
+          type: string
+        itemExpiryDate:
+          type: string
+        cubeName:
+          type: string
+        boxID:
+          type: string
+        boxName:
           type: string
 
     UpdateInventoryItemBody:

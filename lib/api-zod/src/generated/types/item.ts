@@ -35,6 +35,8 @@ export interface Item {
   /** @nullable */
   itemQty?: string | null;
   /** @nullable */
+  itemExpiryDate?: string | null;
+  /** @nullable */
   status?: string | null;
   /** @nullable */
   category?: string | null;

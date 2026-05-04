@@ -6,5 +6,53 @@
     "action": "Saved Formation",
     "details": "\"Test Formation Log\" (sqlite)",
     "date": "2026-05-01T13:06:56.744Z"
+  },
+  {
+    "id": "d81505a5-47ef-4149-8cfb-226bdb7af1d6",
+    "userId": 1,
+    "username": "pritam9160",
+    "action": "Edited Item Expiry",
+    "details": "TENT FOR 2 PERSON  (I1):  → 2027-08-15",
+    "date": "2026-05-04T14:05:42.323Z"
+  },
+  {
+    "id": "b5a62b2c-ed2b-468a-8862-076556c11564",
+    "userId": 1,
+    "username": "pritam9160",
+    "action": "Edited Item Expiry",
+    "details": "STAINLESS STEEL WOOD STOVE (I2):  → 2026-12-01",
+    "date": "2026-05-04T14:05:42.393Z"
+  },
+  {
+    "id": "2f17198c-35dd-401a-a60a-93f7811cfdfa",
+    "userId": 1,
+    "username": "pritam9160",
+    "action": "Edited Item Expiry",
+    "details": "MULTI-UTILITY CIGS LIGHT WEIGHT THIN FILM 30W/60W FOLDABLE SOLAR CHARGER WITH LED LIGHT (I3):  → 2025-06-15",
+    "date": "2026-05-04T14:09:01.601Z"
+  },
+  {
+    "id": "de18e3e1-0356-4cad-afda-3efdee714654",
+    "userId": 1,
+    "username": "pritam9160",
+    "action": "Edited Item Expiry",
+    "details": "MULTI-UTILITY CIGS LIGHT WEIGHT THIN FILM 30W/60W FOLDABLE SOLAR CHARGER WITH LED LIGHT (I3): 2025-06-15 → (cleared)",
+    "date": "2026-05-04T14:09:35.591Z"
+  },
+  {
+    "id": "c341f7f0-8a4d-4ab0-af6e-c4d1592b9de0",
+    "userId": 1,
+    "username": "pritam9160",
+    "action": "Edited Item Expiry",
+    "details": "TENT FOR 2 PERSON  (I1): 2027-08-15 → (cleared)",
+    "date": "2026-05-04T14:12:43.397Z"
+  },
+  {
+    "id": "8a5dc731-2ced-4a1f-97bd-38ddc4bb8673",
+    "userId": 1,
+    "username": "pritam9160",
+    "action": "Edited Item Expiry",
+    "details": "TENT FOR 2 PERSON  (I1):  → 2027-08-15",
+    "date": "2026-05-04T14:12:43.624Z"
   }
 ]

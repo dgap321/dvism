@@ -42,6 +42,8 @@ export interface Item {
   /** @nullable */
   itemQty?: string | null;
   /** @nullable */
+  itemExpiryDate?: string | null;
+  /** @nullable */
   status?: string | null;
   /** @nullable */
   category?: string | null;
@@ -50,6 +52,11 @@ export interface Item {
 export interface UpdateItemBody {
   itemName?: string;
   itemQty?: string;
+  itemPhoto?: string;
+  status?: string;
+  category?: string;
+  /** @nullable */
+  itemExpiryDate?: string | null;
 }
 
 export interface Kit {
@@ -59,12 +66,18 @@ export interface Kit {
   /** @nullable */
   kitQty?: string | null;
   /** @nullable */
+  kitPhoto?: string | null;
+  /** @nullable */
+  kitCode?: string | null;
+  /** @nullable */
   boxName?: string | null;
   /** @nullable */
   frameName?: string | null;
   /** @nullable */
   cubeName?: string | null;
   itemCount: number;
+  /** @nullable */
+  kitExpiryDate?: string | null;
 }
 
 export interface UpdateKitBody {
@@ -95,11 +108,18 @@ export interface InventoryItem {
 }
 
 export interface AddItemToKitBody {
-  itemID: string;
+  itemID?: string;
   itemName: string;
   itemQty: string;
   status?: string;
   category?: string;
+  kitPhoto?: string;
+  kitCode?: string;
+  itemPhoto?: string;
+  itemExpiryDate?: string;
+  cubeName?: string;
+  boxID?: string;
+  boxName?: string;
 }
 
 export interface UpdateInventoryItemBody {

@@ -43,10 +43,22 @@ export function initUserDb(userId: number): void {
   }
 }
 
+function ensureExpiryColumn(db: DatabaseSync): void {
+  const migrations = [
+    "ALTER TABLE EnglishMotherCube ADD COLUMN itemExpiryDate TEXT",
+    "ALTER TABLE HindiMotherCube ADD COLUMN itemExpiryDate TEXT",
+  ];
+  for (const sql of migrations) {
+    try { db.exec(sql); } catch { /* column already exists */ }
+  }
+}
+
 export function getDb(userId: number): DatabaseSync {
   if (!_userDbs.has(userId)) {
     initUserDb(userId);
-    _userDbs.set(userId, new DatabaseSync(getUserDbPath(userId)));
+    const db = new DatabaseSync(getUserDbPath(userId));
+    ensureExpiryColumn(db);
+    _userDbs.set(userId, db);
   }
   return _userDbs.get(userId)!;
 }

@@ -28,9 +28,11 @@ A web app for viewing, editing, and deleting records from the Bhishma SQLite dat
 - `GET /api/items` — list all items (EnglishMotherCube)
 - `PATCH /api/items/:id` — update itemName/itemQty
 - `DELETE /api/items/:id` — delete item
-- `GET /api/kits` — list distinct kits (grouped from EnglishMotherCube)
+- `GET /api/kits` — list distinct kits (grouped from EnglishMotherCube). Each kit row includes `kitExpiryDate` = `MIN(NULLIF(itemExpiryDate, ''))` across all items in that kit (auto-derived).
 - `PATCH /api/kits/:kitId` — update kitName/kitQty
 - `DELETE /api/kits/:kitId` — delete all rows for kit
+- `GET /api/kits/:kitId/items` — list items inside a kit; each item includes `itemExpiryDate`
+- `PATCH /api/items/:id` — supports `itemExpiryDate` (YYYY-MM-DD or empty to clear); changes are written to the changes log as `Edited Item Expiry`. Idempotent migration in `getDb()` and CSV import ensures the `itemExpiryDate` column exists in EnglishMotherCube and HindiMotherCube.
 - `GET /api/inventory` — list MotherCuber3 items
 - `PATCH /api/inventory/:id` — update ItemName/Qty
 - `DELETE /api/inventory/:id` — delete inventory item

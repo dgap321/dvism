@@ -34,6 +34,7 @@ export const ListItemsResponseItem = zod.object({
   itemID: zod.string().nullish(),
   itemName: zod.string().nullish(),
   itemQty: zod.string().nullish(),
+  itemExpiryDate: zod.string().nullish(),
   status: zod.string().nullish(),
   category: zod.string().nullish(),
 });
@@ -50,8 +51,9 @@ export const UpdateItemBody = zod.object({
   itemName: zod.string().optional(),
   itemQty: zod.string().optional(),
   itemPhoto: zod.string().optional(),
-  category: zod.string().optional(),
   status: zod.string().optional(),
+  category: zod.string().optional(),
+  itemExpiryDate: zod.string().nullish(),
 });
 
 export const UpdateItemResponse = zod.object({
@@ -69,6 +71,7 @@ export const UpdateItemResponse = zod.object({
   itemID: zod.string().nullish(),
   itemName: zod.string().nullish(),
   itemQty: zod.string().nullish(),
+  itemExpiryDate: zod.string().nullish(),
   status: zod.string().nullish(),
   category: zod.string().nullish(),
 });
@@ -94,6 +97,7 @@ export const ListKitsResponseItem = zod.object({
   frameName: zod.string().nullish(),
   cubeName: zod.string().nullish(),
   itemCount: zod.number(),
+  kitExpiryDate: zod.string().nullish(),
 });
 export const ListKitsResponse = zod.array(ListKitsResponseItem);
 
@@ -113,10 +117,13 @@ export const UpdateKitResponse = zod.object({
   kitID: zod.string(),
   kitName: zod.string().nullish(),
   kitQty: zod.string().nullish(),
+  kitPhoto: zod.string().nullish(),
+  kitCode: zod.string().nullish(),
   boxName: zod.string().nullish(),
   frameName: zod.string().nullish(),
   cubeName: zod.string().nullish(),
   itemCount: zod.number(),
+  kitExpiryDate: zod.string().nullish(),
 });
 
 /**
@@ -142,6 +149,7 @@ export const AddItemToKitBody = zod.object({
   kitPhoto: zod.string().optional(),
   kitCode: zod.string().optional(),
   itemPhoto: zod.string().optional(),
+  itemExpiryDate: zod.string().optional(),
   cubeName: zod.string().optional(),
   boxID: zod.string().optional(),
   boxName: zod.string().optional(),
