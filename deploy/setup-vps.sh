@@ -18,21 +18,12 @@ echo "========================================"
 apt-get update -y
 apt-get install -y curl git nginx certbot python3-certbot-nginx ufw
 
-# ── 2. Node.js 24 via fnm ──────────────────────────────────────────────────
+# ── 2. Node.js 24 via NodeSource ───────────────────────────────────────────
 if ! command -v node &>/dev/null || [[ "$(node -e 'console.log(process.version.split(".")[0].slice(1))')" -lt 24 ]]; then
-  curl -fsSL https://fnm.vercel.app/install | bash
-  export FNM_DIR="$HOME/.local/share/fnm"
-  export PATH="$FNM_DIR:$PATH"
-  eval "$(fnm env)"
-  fnm install 24
-  fnm use 24
-  fnm default 24
-  # Make node/npm available system-wide
-  NODE_BIN=$(fnm exec --using=24 which node)
-  ln -sf "$NODE_BIN" /usr/local/bin/node
-  NPM_BIN=$(fnm exec --using=24 which npm)
-  ln -sf "$NPM_BIN" /usr/local/bin/npm
+  curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
+  apt-get install -y nodejs
 fi
+node --version
 
 # ── 3. pnpm ────────────────────────────────────────────────────────────────
 npm install -g pnpm pm2
