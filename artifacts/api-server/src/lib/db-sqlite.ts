@@ -2,20 +2,22 @@ import { DatabaseSync } from "node:sqlite";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import { AUTH_DB_PATH, USER_DBS_DIR, DATA_DIR } from "./data-dir";
+
+export { AUTH_DB_PATH, USER_DBS_DIR };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SRC_DIR = path.resolve(__dirname, "..", "src");
 
-export const AUTH_DB_PATH   = path.resolve(SRC_DIR, "auth.db");
-export const DB_ORIGINAL_PATH = path.resolve(SRC_DIR, "bhishma-original.db");
-export const USER_DBS_DIR   = path.resolve(SRC_DIR, "user_dbs");
+// DB_ORIGINAL_PATH lives in src/ (tracked in git as the seed template).
+// It is NOT mutable user data, so it stays repo-relative.
+export const DB_ORIGINAL_PATH = path.resolve(__dirname, "..", "src", "bhishma-original.db");
 
 // ── Auth DB (shared, never reset) ──────────────────────────────────────────
 let _authDb: DatabaseSync | null = null;
 
 export function getAuthDb(): DatabaseSync {
   if (!_authDb) {
-    fs.mkdirSync(SRC_DIR, { recursive: true });
+    fs.mkdirSync(DATA_DIR, { recursive: true });
     _authDb = new DatabaseSync(AUTH_DB_PATH);
   }
   return _authDb;

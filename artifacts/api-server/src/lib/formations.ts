@@ -1,10 +1,8 @@
 import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import { randomUUID } from "crypto";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FORMATIONS_PATH = path.resolve(__dirname, "..", "src", "formations.json");
+import { FORMATIONS_PATH } from "./data-dir";
+
 
 export interface Formation {
   id: string;

@@ -52,3 +52,10 @@ Thumbs.db
 *.db
 *.db-shm
 *.db-wal
+
+# Runtime data files — live in DATA_DIR on production, excluded from git
+artifacts/api-server/src/changes.json
+artifacts/api-server/src/formations.json
+artifacts/api-server/src/user_dbs/
+artifacts/api-server/src/auth.db
+artifacts/api-server/.env.runtime

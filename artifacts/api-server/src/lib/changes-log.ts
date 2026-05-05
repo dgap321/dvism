@@ -1,10 +1,8 @@
 import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import { randomUUID } from "crypto";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CHANGES_PATH = path.resolve(__dirname, "..", "src", "changes.json");
+import { CHANGES_PATH } from "./data-dir";
+
 
 export interface ChangeEntry {
   id: string;
