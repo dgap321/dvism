@@ -1,0 +1,63 @@
+root/.pm2/logs/bhishm-api-out.log last 30 lines:
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+1|bhishm-a | [auth] Super admin ensured — username: pritam9160
+
+/root/.pm2/logs/bhishm-api-error.log last 30 lines:
+1|bhishm-a |     at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+1|bhishm-a |     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+1|bhishm-a |     at async node:internal/modules/esm/loader:639:26
+1|bhishm-a | Warning: connect.session() MemoryStore is not
+1|bhishm-a | designed for a production environment, as it will leak
+1|bhishm-a | memory, and will not scale past a single process.
+1|bhishm-a | ReferenceError: SRC_DIR is not defined
+1|bhishm-a |     at initBackup (/var/www/bhishm/artifacts/api-server/src/lib/db-sqlite.ts:100:37)
+1|bhishm-a |     at <anonymous> (/var/www/bhishm/artifacts/api-server/src/index.ts:18:1)
+1|bhishm-a |     at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+1|bhishm-a |     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+1|bhishm-a |     at async node:internal/modules/esm/loader:639:26
+1|bhishm-a | Warning: connect.session() MemoryStore is not
+1|bhishm-a | designed for a production environment, as it will leak
+1|bhishm-a | memory, and will not scale past a single process.
+1|bhishm-a | ReferenceError: SRC_DIR is not defined
+1|bhishm-a |     at initBackup (/var/www/bhishm/artifacts/api-server/src/lib/db-sqlite.ts:100:37)
+1|bhishm-a |     at <anonymous> (/var/www/bhishm/artifacts/api-server/src/index.ts:18:1)
+1|bhishm-a |     at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+1|bhishm-a |     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+1|bhishm-a |     at async node:internal/modules/esm/loader:639:26
+1|bhishm-a | Warning: connect.session() MemoryStore is not
+1|bhishm-a | designed for a production environment, as it will leak
+1|bhishm-a | memory, and will not scale past a single process.
+1|bhishm-a | ReferenceError: SRC_DIR is not defined
+1|bhishm-a |     at initBackup (/var/www/bhishm/artifacts/api-server/src/lib/db-sqlite.ts:100:37)
+1|bhishm-a |     at <anonymous> (/var/www/bhishm/artifacts/api-server/src/index.ts:18:1)
+1|bhishm-a |     at ModuleJob.run (node:internal/modules/esm/module_job:437:25)
+1|bhishm-a |     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+1|bhishm-a |     at async node:internal/modules/esm/loader:639:26

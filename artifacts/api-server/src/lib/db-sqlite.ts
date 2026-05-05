@@ -97,7 +97,7 @@ export function initBackup(): void {
   // Ensure the original reference DB exists. If not, try to seed from the
   // legacy shared bhishma.db so the server isn't left without a template.
   if (!fs.existsSync(DB_ORIGINAL_PATH)) {
-    const legacyPath = path.resolve(SRC_DIR, "bhishma.db");
+    const legacyPath = path.resolve(__dirname, "..", "src", "bhishma.db");
     if (fs.existsSync(legacyPath)) {
       fs.copyFileSync(legacyPath, DB_ORIGINAL_PATH);
     }
